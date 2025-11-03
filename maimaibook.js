@@ -46,7 +46,7 @@ javascript:(function() {
         console.error("달성률 파싱 실패:", text);
         return;
     }
-    const finalRate = parseFloat(${match[1]}.${match[2]});
+    const finalRate = parseFloat(`${match[1]}.${match[2]}`);
     console.log("게임 달성률:", finalRate);
     // === 3. 모든 가능한 해답 계산 ===
     function calcAllSolutions(tap, hold, slide, touch, breakCounts, finalRate, roundMode = "floor") {
@@ -132,9 +132,10 @@ javascript:(function() {
     console.log("모든 가능한 BREAK 분배:", results);
     // 선택: 결과 창에 alert 띄우기
     if (results.length > 0) {
-        alert(가능한 해답 ${results.length}개 발견!\n콘솔을 확인하세요.);
+        alert(`가능한 해답 ${results.length}개 발견!\n콘솔을 확인하세요.`);
     } else {
         alert("해답을 찾지 못했습니다.\n계산 로직을 확인해보세요.");
     }
 })();
+
 
