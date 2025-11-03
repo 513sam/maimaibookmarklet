@@ -33,8 +33,8 @@ javascript:(function() {
     const musicKind = imgElement ? (imgElement.src === 'https://maimaidx-eng.com/maimai-mobile/img/music_standard.png' ? 'standard' : imgElement.src === 'https://maimaidx-eng.com/maimai-mobile/img/music_dx.png' ? 'delux' : null) : null;
     const diffImg = document.querySelector('img.playlog_diff.v_b')?.src || null;     
     const difficulty = diffImg ? diffImg.match(/diff*([a-z]+).png$/i)?.[1] : null;
-   
-    // === 2. 달성률 정확하게 추출 (정규식) ===
+    console.log(level);
+  // === 2. 달성률 정확하게 추출 (정규식) ===
     const divElement = document.querySelector('div.playlog_achievement_txt.t_r');
     if (!divElement) {
         console.error("달성률 요소를 찾을 수 없습니다.");
@@ -137,3 +137,4 @@ javascript:(function() {
         alert("해답을 찾지 못했습니다.\n계산 로직을 확인해보세요.");
     }
 })();
+
