@@ -50,7 +50,7 @@ javascript:(function() {
     // === 4. 각 요소 추출 (모두 범용 선택자) ===
     
     // 1. 재킷 이미지
-    const jacketImg = playlogContainer.querySelector('img.music_img.m_5.m_b_17.m_r_0.f_l')?.src || null;
+    const jacketImg = playlogContainer.querySelector('img.music_img')?.src || null;
     
     // 2. 트랙 수 (예: "01/04")
     const trackCount = topInfoContainer.querySelector('span.red.f_b.v_b')?.textContent.trim() || null;
@@ -201,6 +201,7 @@ javascript:(function() {
         alert("해답을 찾지 못했습니다.\n계산 로직을 확인해보세요.");
     }
 })();
+
 
 
 
