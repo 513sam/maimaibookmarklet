@@ -25,69 +25,15 @@ javascript:(function() {
     const breakGreat = parseInt(document.querySelector('body > div.wrapper.main_wrapper.t_c > div.gray_block.m_10.m_t_0.p_b_5.f_0 > div:nth-child(4) > table > tbody > tr:nth-child(6) > td:nth-child(4)')?.textContent.trim(), 10) || 0;
     const breakGood = parseInt(document.querySelector('body > div.wrapper.main_wrapper.t_c > div.gray_block.m_10.m_t_0.p_b_5.f_0 > div:nth-child(4) > table > tbody > tr:nth-child(6) > td:nth-child(5)')?.textContent.trim(), 10) || 0;
     const breakMiss = parseInt(document.querySelector('body > div.wrapper.main_wrapper.t_c > div.gray_block.m_10.m_t_0.p_b_5.f_0 > div:nth-child(4) > table > tbody > tr:nth-child(6) > td:nth-child(6)')?.textContent.trim(), 10) || 0;
-    const topContainer = document.querySelector('body > div.wrapper.main_wrapper.t_c > div.p_10.t_l.f_0.v_b');
-    if (!topContainer) {
-        console.error("최상위 컨테이너를 찾을 수 없습니다.");
-        return;
-    }
     
-    // === 2. playlog_*_container 자동 탐지 (Master, Re:Master, Utage 등) ===
-    const playlogContainer = topContainer.querySelector('div[class*="playlog_"][class*="container"]') ||
-                             topContainer.querySelector('div[class*="playlog_"]');
-    
-    if (!playlogContainer) {
-        console.error("플레이로그 컨테이너를 찾을 수 없습니다.");
-        return;
-    }
-    
-    // === 3. playlog_top_container (고정 위치, 모든 난이도 공통) ===
-    const topInfoContainer = topContainer.querySelector('.playlog_top_container.p_r');
-    if (!topInfoContainer) {
-        console.error("상단 정보 컨테이너를 찾을 수 없습니다.");
-        return;
-    }
-    
-    // === 4. 각 요소 추출 (모두 범용 선택자) ===
-    
-    // 1. 재킷 이미지
-    const jacketImg = playlogContainer.querySelector('img.music_img')?.src || null;
-    
-    // 2. 트랙 수 (예: "01/04")
-    const trackCount = topInfoContainer.querySelector('span.red.f_b.v_b')?.textContent.trim() || null;
-    
-    // 3. 실시간 (예: "2025/04/05 12:34")
-    const realTime = topInfoContainer.querySelector('div.sub_title.t_c.f_r.f_11 > span:nth-child(2)')?.textContent.trim() || null;
-    
-    // 4. 음악 종류 (Standard / DX)
-    const kindImgElement = playlogContainer.querySelector('img.playlog_music_kind_icon')?.src || null;
-    const musicKind = kindImgElement
-        ? kindImgElement.includes('music_standard.png') ? 'standard'
-        : kindImgElement.includes('music_dx.png') ? 'delux'
-        : null
-        : null;
-    
-    // 5. 난이도 이미지 + 난이도 이름 (basic, advanced, expert, master, remaster)
-    const diffImgElement = document.querySelector('img.playlog_diff.v_b')?.src || null;
-    const difficulty = diffImgElement
-        ? diffImgElement.match(/diff_([a-z]+)\.png$/i)?.[1]  // diff_master.png → "master"
-        : null;
-    
-    // 6. 레벨 (14+)
-    const levelElement = playlogContainer.querySelector('.playlog_level_icon');
-    const level = levelElement ? levelElement.textContent.trim() : null;
-    
-    // 7. 곡명
-    const basicBlock = playlogContainer.querySelector('.basic_block.m_5.m_t_17.m_r_60.p_5.p_l_10.f_13.break');
-    let songName = null;
-    if (basicBlock) {
-        songName = Array.from(basicBlock.childNodes)
-            .filter(node => node.nodeType === 3)
-            .map(node => node.textContent.trim())
-            .filter(text => text.length > 0)
-            .join('');
-    }
-    
-    // === 8. 최종 출력 (디버깅용) ===
+    const level=document.querySelector('body > div.wrapper.main_wrapper.t_c > div.p_10.t_l.f_0.v_b > div[class*="playlog_"][class*="_container"] > div.basic_block.m_5.m_t_17.m_r_60.p_5.p_l_10.f_13.break > div.w_80.f_r > div')?.textContent.trim()||null;
+    const jacketImg=document.querySelector('body > div.wrapper.main_wrapper.t_c > div.p_10.t_l.f_0.v_b > div[class*="playlog_"][class*="_container"] > div.p_r.f_0 > img.music_img.m_5.m_b_17.m_r_0.f_l')?.src||null;
+    const trackCount=document.querySelector('body > div.wrapper.main_wrapper.t_c > div.p_10.t_l.f_0.v_b > div.playlog_top_container.p_r > div.sub_title.t_c.f_r.f_11 > span.red.f_b.v_b')?.textContent.trim()||null;
+    const realTime=document.querySelector('body > div.wrapper.main_wrapper.t_c > div.p_10.t_l.f_0.v_b > div.playlog_top_container.p_r > div.sub_title.t_c.f_r.f_11 > span:nth-child(2)')?.textContent.trim()||null;
+    const imgElement=document.querySelector('body > div.wrapper.main_wrapper.t_c > div.p_10.t_l.f_0.v_b > div[class*="playlog_"][class*="_container"] > div.p_r.f_0 > img.playlog_music_kind_icon')?.src||null;
+    const musicKind=imgElement?(imgElement==='https://maimaidx-eng.com/maimai-mobile/img/music_standard.png'?'standard':imgElement==='https://maimaidx-eng.com/maimai-mobile/img/music_dx.png'?'delux':null):null;
+    const diffImg=document.querySelector('img.playlog_diff.v_b')?.src||null;
+    const difficulty=diffImg?diffImg.match(/diff_([a-z]+)\.png$/i)?.[1]:null;
     console.log({
         songName,
         level,
