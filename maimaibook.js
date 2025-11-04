@@ -129,12 +129,12 @@ javascript:(function () {
     console.log("가능한 해답 개수:", results.length);
     console.log("모든 가능한 BREAK 분배:", results);
 
-
-    // 1. 데이터 저장
+    /* ============================= 수정된 새 탭 시각화 코드 ============================= */
+    // 1. 데이터 저장 (BREAK 분배 정보 추가)
     const data = {
         songName, level, jacketImg, trackCount, realTime, musicKind, difficulty, finalRate,
         notes: { tap, hold, slide, touch, breaks },
-        solutions: results.length > 0 ? results[0] : null   
+        solutions: results.length > 0 ? results[0] : null
     };
     localStorage.setItem('maimaiResultData', JSON.stringify(data));
 
@@ -164,11 +164,13 @@ javascript:(function () {
     .good{background:#90ee90;color:#000;}
     .miss{background:#aaa;color:#000;}
     .ach{background:#555;color:#fff;font-weight:bold;}
-    .arrow{cursor:pointer;font-size:1.2rem;margin:0 4px;}
+    .arrow{cursor:pointer;font-size:1.2rem;margin:0 4px;color:#fff;}
+    .arrow:hover{color:#ff0;}
     .loss{font-size:0.8rem;}
-    .finalRate{font-size:1.8rem;font-weight:bold;margin-top:12px;text-align:center;}
+    .finalRate{font-size:1.8rem;font-weight:bold;margin-top:12px;text-align:center;color:#ff0;}
     .resetBtn{margin-top:15px;padding:8px 16px;background:#c00;color:#fff;border:none;border-radius:4px;cursor:pointer;font-weight:bold;}
     .resetBtn:hover{background:#f00;}
+    .break-special{font-size:0.85rem;line-height:1.2;}
 </style>
 </head>
 <body>
@@ -189,214 +191,258 @@ javascript:(function () {
             <tr><th></th><th class="crit">CRITICAL PERFECT</th><th class="perf">PERFECT</th><th class="great">GREAT</th><th class="good">GOOD</th><th class="miss">MISS</th><th class="ach">ACHIVEMENT</th></tr>
         </thead>
         <tbody>
-            <tr><td>TAP</td><td class="val crit" data-type="tap" data-j="CRITICAL"></td><td class="val perf" data-type="tap" data-j="PERFECT"></td><td class="val great" data-type="tap" data-j="GREAT"></td><td class="val good" data-type="tap" data-j="GOOD"></td><td class="val miss" data-type="tap" data-j="MISS"></td><td class="ach" id="ach_tap"></td></tr>
-            <tr><td>HOLD</td><td class="val crit" data-type="hold" data-j="CRITICAL"></td><td class="val perf" data-type="hold" data-j="PERFECT"></td><td class="val great" data-type="hold" data-j="GREAT"></td><td class="val good" data-type="hold" data-j="GOOD"></td><td class="val miss" data-type="hold" data-j="MISS"></td><td class="ach" id="ach_hold"></td></tr>
-            <tr><td>SLIDE</td><td class="val crit" data-type="slide" data-j="CRITICAL"></td><td class="val perf" data-type="slide" data-j="PERFECT"></td><td class="val great" data-type="slide" data-j="GREAT"></td><td class="val good" data-type="slide" data-j="GOOD"></td><td class="val miss" data-type="slide" data-j="MISS"></td><td class="ach" id="ach_slide"></td></tr>
-            <tr><td>TOUCH</td><td class="val crit" data-type="touch" data-j="CRITICAL"></td><td class="val perf" data-type="touch" data-j="PERFECT"></td><td class="val great" data-type="touch" data-j="GREAT"></td><td class="val good" data-type="touch" data-j="GOOD"></td><td class="val miss" data-type="touch" data-j="MISS"></td><td class="ach" id="ach_touch"></td></tr>
-            <tr><td>BREAK</td><td class="val crit" data-type="breaks" data-j="CRITICAL"></td>
-                <td class="val perf" id="breakPerf">0-0</td>
-                <td class="val great" id="breakGreat">0-0-0</td>
-                <td class="val good" data-type="breaks" data-j="GOOD"></td>
-                <td class="val miss" data-type="breaks" data-j="MISS"></td>
-                <td class="ach" id="ach_break"></td></tr>
+            <tr><td>TAP</td><td class="val crit editable" data-type="tap" data-j="CRITICAL"></td><td class="val perf editable" data-type="tap" data-j="PERFECT"></td><td class="val great editable" data-type="tap" data-j="GREAT"></td><td class="val good editable" data-type="tap" data-j="GOOD"></td><td class="val miss editable" data-type="tap" data-j="MISS"></td><td class="ach" id="ach_tap"></td></tr>
+            <tr><td>HOLD</td><td class="val crit editable" data-type="hold" data-j="CRITICAL"></td><td class="val perf editable" data-type="hold" data-j="PERFECT"></td><td class="val great editable" data-type="hold" data-j="GREAT"></td><td class="val good editable" data-type="hold" data-j="GOOD"></td><td class="val miss editable" data-type="hold" data-j="MISS"></td><td class="ach" id="ach_hold"></td></tr>
+            <tr><td>SLIDE</td><td class="val crit editable" data-type="slide" data-j="CRITICAL"></td><td class="val perf editable" data-type="slide" data-j="PERFECT"></td><td class="val great editable" data-type="slide" data-j="GREAT"></td><td class="val good editable" data-type="slide" data-j="GOOD"></td><td class="val miss editable" data-type="slide" data-j="MISS"></td><td class="ach" id="ach_slide"></td></tr>
+            <tr><td>TOUCH</td><td class="val crit editable" data-type="touch" data-j="CRITICAL"></td><td class="val perf editable" data-type="touch" data-j="PERFECT"></td><td class="val great editable" data-type="touch" data-j="GREAT"></td><td class="val good editable" data-type="touch" data-j="GOOD"></td><td class="val miss editable" data-type="touch" data-j="MISS"></td><td class="ach" id="ach_touch"></td></tr>
+            <tr><td>BREAK</td><td class="val crit editable" data-type="breaks" data-j="CRITICAL"></td>
+                <td class="val perf break-special" id="breakPerf">75%:0<br>50%:0</td>
+                <td class="val great break-special" id="breakGreat">80%:0<br>60%:0<br>50%:0</td>
+                <td class="val good editable" data-type="breaks" data-j="GOOD"></td>
+                <td class="val miss editable" data-type="breaks" data-j="MISS"></td>
+                <td class="ach" id="ach_breaks"></td></tr>
             <tr><td>TOTAL</td><td colspan="5" id="totalCounts"></td><td class="ach" id="ach_total"></td></tr>
         </tbody>
     </table>
 
-    <div class="finalRate" id="finalRate"></div>
-    <button class="resetBtn" id="resetBtn">리셋</button>
+    <div class="finalRate" id="finalRate">99.9999%</div>
+    <button class="resetBtn" id="resetBtn">🔄 리셋</button>
 </div>
 
 <script>
 /* ---------- 데이터 로드 ---------- */
 const raw = localStorage.getItem('maimaiResultData');
-if (!raw) { document.body.innerHTML = '<h1 style="color:#f66;text-align:center;">데이터 없음</h1>'; }
+if (!raw) { 
+    document.body.innerHTML = '<h1 style="color:#f66;text-align:center;padding:50px;">데이터 없음 - 결과화면에서 다시 실행</h1>'; 
+    throw new Error('No data');
+}
 const d = JSON.parse(raw);
-const orig = JSON.parse(JSON.stringify(d.notes)); // 초기값 보관
+const orig = JSON.parse(JSON.stringify(d.notes)); 
 const sol = d.solutions;
 
+// BREAK 분배 상태 관리
+let breakPerf75 = sol ? sol['75%Perfect'] : 0;
+let breakPerf50 = sol ? sol['50%Perfect'] : 0;
+let breakGreat80 = sol ? sol['80%Great'] : 0;
+let breakGreat60 = sol ? sol['60%Great'] : 0;
+let breakGreat50 = sol ? sol['50%Great'] : 0;
+
 /* ---------- 상단 정보 ---------- */
-document.getElementById('jacket').src = d.jacketImg;
-document.getElementById('songName').textContent = d.songName;
+document.getElementById('jacket').src = d.jacketImg || '';
+document.getElementById('songName').textContent = d.songName || 'Unknown';
 document.getElementById('track').textContent = 'Track ' + (d.trackCount || '?');
 document.getElementById('time').textContent = d.realTime || '?';
 document.getElementById('kind').textContent = d.musicKind === 'standard' ? 'Standard' : d.musicKind === 'delux' ? 'Deluxe' : '?';
 const lvl = document.getElementById('level');
-lvl.textContent = d.level;
+lvl.textContent = d.level || '?';
 const diffMap = {basic:'#0a0',advanced:'#aa0',expert:'#a00',master:'#a0a',reMaster:'#d0d8ff'};
 lvl.style.background = diffMap[d.difficulty] || '#555';
 
-/* ---------- 판정값 초기화 ---------- */
+/* ---------- 계산 로직 ---------- */
+const weights = {tap:1, hold:2, slide:3, touch:1, breaks:5};
 const noteTypes = ['tap','hold','slide','touch','breaks'];
-const judgments = ['CRITICAL','PERFECT','GREAT','GOOD','MISS'];
-noteTypes.forEach(t => {
-    judgments.forEach(j => {
-        const cell = document.querySelector(\`td[data-type="\${t}"][data-j="\${j}"]\`);
-        if (cell) cell.dataset.orig = d.notes[t][j];
-    });
-});
-if (sol) {
-    document.getElementById('breakPerf').textContent = sol['75%Perfect'] + '-' + sol['50%Perfect'];
-    document.getElementById('breakGreat').textContent = sol['80%Great'] + '-' + sol['60%Great'] + '-' + sol['50%Great'];
+
+function getTotal(noteType) {
+    const note = d.notes[noteType];
+    if (noteType === 'breaks') {
+        return note.CRITICAL + d.notes.breaks.PERFECT + d.notes.breaks.GREAT + note.GOOD + note.MISS;
+    }
+    return note.CRITICAL + note.PERFECT + note.GREAT + note.GOOD + note.MISS;
 }
 
-/* ---------- 계산 로직 ---------- */
-const weights = {tap:1,hold:2,slide:3,touch:1,breaks:5};
-function getTotal(note) { return note.CRITICAL+note.PERFECT+note.GREAT+note.GOOD+note.MISS; }
-function getMaxScore(note,w) { return getTotal(note)*w; }
-function getScore(note,w) {
-    return (note.CRITICAL+note.PERFECT)*w + note.GREAT*w*0.8 + note.GOOD*w*0.5;
+function getNoteScore(noteType) {
+    const note = d.notes[noteType];
+    const w = weights[noteType];
+    let score = (note.CRITICAL + note.PERFECT) * w;
+    score += note.GREAT * w * 0.8;
+    score += note.GOOD * w * 0.5;
+    
+    // BREAK 특수 계산
+    if (noteType === 'breaks') {
+        const gScore = breakGreat80 * 5 * 0.8 + breakGreat60 * 5 * 0.6 + breakGreat50 * 5 * 0.5;
+        score = note.CRITICAL * 5 + (breakPerf75 + breakPerf50) * 5 + note.GOOD * 5 * 0.4 + gScore;
+    }
+    
+    return score;
 }
-function getLoss(note,w) {
-    const max = getMaxScore(note,w);
-    const cur = getScore(note,w);
-    return ((max-cur)/max*100).toFixed(2);
+
+function getMaxScore(noteType) {
+    return getTotal(noteType) * weights[noteType];
 }
+
+function getLoss(noteType) {
+    const maxS = getMaxScore(noteType);
+    const curS = getNoteScore(noteType);
+    return ((maxS - curS) / maxS * 100).toFixed(2);
+}
+
 function getBreakBonus() {
-    const b = d.notes.breaks;
-    const B = getTotal(b);
-    if (B===0) return 0;
-    const p75 = sol ? sol['75%Perfect'] : 0;
-    const p50 = sol ? sol['50%Perfect'] : 0;
-    const g80 = sol ? sol['80%Great'] : 0;
-    const g60 = sol ? sol['60%Great'] : 0;
-    const g50 = sol ? sol['50%Great'] : 0;
-    const bonus = (b.CRITICAL + 0.75*p75 + 0.5*p50 + 0.4*b.GREAT + 0.3*b.GOOD)/B;
-    return bonus*1;
+    const B = getTotal('breaks');
+    if (B === 0) return 0;
+    return (d.notes.breaks.CRITICAL + 
+            0.75 * breakPerf75 + 
+            0.5 * breakPerf50 + 
+            0.4 * d.notes.breaks.GREAT + 
+            0.3 * d.notes.breaks.GOOD) / B;
 }
+
 function calcAll() {
     let W = 0, S = 0;
     noteTypes.forEach(t => {
-        const w = weights[t];
-        const n = d.notes[t];
-        W += getMaxScore(n,w);
-        S += getScore(n,w);
+        W += getMaxScore(t);
+        S += getNoteScore(t);
     });
-    const notePct = W===0 ? 0 : (S/W*100);
+    
+    const notePct = W === 0 ? 0 : (S / W * 100);
     const bonusPct = getBreakBonus();
     const totalPct = notePct + bonusPct;
-
-    // ACHIVEMENT
+    
+    // 각 노트 손실률
     noteTypes.forEach(t => {
-        const loss = getLoss(d.notes[t], weights[t]);
-        document.getElementById('ach_'+t).textContent = '-' + loss + '%';
+        document.getElementById('ach_' + t).textContent = '-' + getLoss(t) + '%';
     });
-    document.getElementById('ach_total').textContent = totalPct.toFixed(4)+'%';
-
-    // Final Rate
-    document.getElementById('finalRate').textContent = totalPct.toFixed(4)+'%';
-
-    // TOTAL counts
-    const totals = noteTypes.map(t=>getTotal(d.notes[t]));
+    
+    // TOTAL
+    document.getElementById('ach_total').textContent = totalPct.toFixed(4) + '%';
+    document.getElementById('finalRate').textContent = totalPct.toFixed(4) + '%';
+    
+    // 총 개수
+    const totals = noteTypes.map(t => getTotal(t));
     document.getElementById('totalCounts').textContent = totals.join(' / ');
+    
+    // BREAK 분배 업데이트
+    document.getElementById('breakPerf').innerHTML = \`75%: \${breakPerf75}<br>50%: \${breakPerf50}\`;
+    document.getElementById('breakGreat').innerHTML = \`80%: \${breakGreat80}<br>60%: \${breakGreat60}<br>50%: \${breakGreat50}\`;
 }
 
-/* ---------- 화살표 동작 ---------- */
-function makeArrow(cell, delta) {
-    const arrow = document.createElement('span');
-    arrow.className = 'arrow';
-    arrow.textContent = delta>0?'↑':'↓';
-    arrow.onclick = () => adjust(cell, delta);
-    return arrow;
+/* ---------- 판정 조정 로직 (수정됨) ---------- */
+function createArrows(cell) {
+    // 기존 화살표 제거
+    cell.querySelectorAll('.arrow').forEach(a => a.remove());
+    
+    const up = document.createElement('span');
+    up.className = 'arrow';
+    up.textContent = '↑';
+    up.onclick = () => adjustValue(cell, 1);
+    
+    const down = document.createElement('span');
+    down.className = 'arrow';
+    down.textContent = '↓';
+    down.onclick = () => adjustValue(cell, -1);
+    
+    cell.appendChild(up);
+    cell.appendChild(down);
 }
-function adjust(cell, delta) {
+
+function adjustValue(cell, delta) {
     const type = cell.dataset.type;
     const jud = cell.dataset.j;
     const note = d.notes[type];
-    const orig = parseInt(cell.dataset.orig);
-
-    // 현재 값
-    let cur = note[jud];
-    if (isNaN(cur)) cur = 0;
-
-    // 목표값
-    let target = cur + delta;
-    if (target < 0) return;
-
-    // 총량 고정
-    const total = getTotal(note);
-    if (target > total) return;
-
-    // PERFECT / CRITICAL PERFECT 우선순위
+    const total = getTotal(type);
+    
     if (jud === 'CRITICAL' || jud === 'PERFECT') {
-        // CRITICAL ↓ → GREAT ↑ (BREAK은 80%GREAT)
-        if (delta < 0 && cur + delta < 0) return;
-        note[jud] = target;
-        const diff = delta < 0 ? -delta : delta;
-        if (delta < 0) { // 내려서 GREAT 올림
-            const greatJud = type==='breaks' ? 'GREAT' : 'GREAT';
-            note[greatJud] += diff;
-        } else { // 올려서 GREAT 내림
-            const greatJud = type==='breaks' ? 'GREAT' : 'GREAT';
-            if (note[greatJud] >= diff) {
-                note[greatJud] -= diff;
+        // CRITICAL/PERFECT 변경
+        let newVal = note[jud] + delta;
+        if (newVal < 0 || newVal > total) return;
+        
+        note[jud] += delta;
+        const diff = Math.abs(delta);
+        
+        if (delta > 0) {
+            // 올리면 → GREAT에서 차감 (BREAK은 80% 우선)
+            if (type === 'breaks') {
+                if (breakGreat80 >= diff) {
+                    breakGreat80 -= diff;
+                } else {
+                    const remain = diff - breakGreat80;
+                    breakGreat80 = 0;
+                    if (breakGreat60 >= remain) {
+                        breakGreat60 -= remain;
+                    } else {
+                        return; // 부족
+                    }
+                }
             } else {
-                // GREAT 부족 → PERFECT에서 차감
-                if (note.PERFECT >= diff - note[greatJud]) {
-                    note.PERFECT -= (diff - note[greatJud]);
-                    note[greatJud] = 0;
-                } else return;
+                if (note.GREAT >= diff) {
+                    note.GREAT -= diff;
+                } else {
+                    return;
+                }
+            }
+        } else {
+            // 내리면 → GREAT으로 이동 (BREAK은 80%)
+            if (type === 'breaks') {
+                breakGreat80 += diff;
+            } else {
+                note.GREAT += diff;
             }
         }
     } else {
-        // GREAT/GOOD/MISS 변동 → CRITICAL PERFECT ↑↓
-        const cp = note.CRITICAL + note.PERFECT;
-        if (delta > 0 && cp < delta) return;
-        note[jud] = target;
-        note.CRITICAL += (delta > 0 ? -delta : Math.abs(delta));
-        if (note.CRITICAL < 0) {
-            const extra = -note.CRITICAL;
-            note.PERFECT -= extra;
-            note.CRITICAL = 0;
-            if (note.PERFECT < 0) return;
+        // GREAT/GOOD/MISS 변경
+        let newVal = note[jud] + delta;
+        if (newVal < 0 || newVal > total) return;
+        
+        const cpTotal = note.CRITICAL + note.PERFECT;
+        if (delta > 0 && cpTotal < Math.abs(delta)) return;
+        
+        note[jud] += delta;
+        
+        if (delta > 0) {
+            // 올리면 → CRITICAL 우선 차감
+            if (note.CRITICAL >= Math.abs(delta)) {
+                note.CRITICAL -= Math.abs(delta);
+            } else {
+                const remain = Math.abs(delta) - note.CRITICAL;
+                note.CRITICAL = 0;
+                note.PERFECT -= remain;
+            }
+        } else {
+            // 내리면 → CRITICAL 증가
+            note.CRITICAL += Math.abs(delta);
         }
     }
-
+    
     // UI 갱신
     cell.textContent = note[jud];
-    cell.appendChild(makeArrow(cell, 1));
-    cell.appendChild(makeArrow(cell, -1));
+    createArrows(cell);
     calcAll();
 }
 
-/* ---------- 셀 초기화 ---------- */
-document.querySelectorAll('td.val').forEach(td => {
-    const type = td.dataset.type;
-    const jud = td.dataset.j;
-    if (!type || !jud) return;
-    const val = d.notes[type][jud];
-    td.textContent = val;
-    td.appendChild(makeArrow(td, 1));
-    td.appendChild(makeArrow(td, -1));
+/* ---------- 초기화 ---------- */
+noteTypes.forEach(t => {
+    ['CRITICAL', 'PERFECT', 'GREAT', 'GOOD', 'MISS'].forEach(j => {
+        const cell = document.querySelector(\`td[data-type="\${t}"][data-j="\${j}"]\`);
+        if (cell) {
+            cell.textContent = d.notes[t][j];
+            createArrows(cell);
+        }
+    });
 });
 
-/* ---------- BREAK 특수 표시 ---------- */
-if (sol) {
-    document.getElementById('breakPerf').textContent = sol['75%Perfect']+'-'+sol['50%Perfect'];
-    document.getElementById('breakGreat').textContent = sol['80%Great']+'-'+sol['60%Great']+'-'+sol['50%Great'];
-}
+// 최초 계산
+calcAll();
 
-/* ---------- 리셋 버튼 ---------- */
+/* ---------- 리셋 ---------- */
 document.getElementById('resetBtn').onclick = () => {
     Object.assign(d.notes, JSON.parse(JSON.stringify(orig)));
-    document.querySelectorAll('td.val').forEach(td => {
-        const type = td.dataset.type;
-        const jud = td.dataset.j;
-        if (!type || !jud) return;
-        const val = d.notes[type][jud];
-        td.textContent = val;
-        td.appendChild(makeArrow(td, 1));
-        td.appendChild(makeArrow(td, -1));
+    breakPerf75 = sol ? sol['75%Perfect'] : 0;
+    breakPerf50 = sol ? sol['50%Perfect'] : 0;
+    breakGreat80 = sol ? sol['80%Great'] : 0;
+    breakGreat60 = sol ? sol['60%Great'] : 0;
+    breakGreat50 = sol ? sol['50%Great'] : 0;
+    
+    noteTypes.forEach(t => {
+        ['CRITICAL', 'PERFECT', 'GREAT', 'GOOD', 'MISS'].forEach(j => {
+            const cell = document.querySelector(\`td[data-type="\${t}"][data-j="\${j}"]\`);
+            if (cell) {
+                cell.textContent = d.notes[t][j];
+                createArrows(cell);
+            }
+        });
     });
-    if (sol) {
-        document.getElementById('breakPerf').textContent = sol['75%Perfect']+'-'+sol['50%Perfect'];
-        document.getElementById('breakGreat').textContent = sol['80%Great']+'-'+sol['60%Great']+'-'+sol['50%Great'];
-    }
+    
     calcAll();
 };
-
-/* ---------- 최초 계산 ---------- */
-calcAll();
 </script>
 </body>
 </html>`;
@@ -408,8 +454,8 @@ calcAll();
 
     // 4. 알림
     if (results.length > 0) {
-        alert(`가능한 해답 ${results.length}개 발견!\n새 탭에서 상세 결과를 확인하세요.`);
+        alert(\`가능한 해답 \${results.length}개 발견!\n새 탭에서 상세 결과 + 편집 가능!\`);
     } else {
-        alert("해답을 찾지 못했습니다.\n계산 로직을 확인해보세요.");
+        alert("해답을 찾지 못했습니다.\\n계산 로직을 확인해보세요.");
     }
 })();
