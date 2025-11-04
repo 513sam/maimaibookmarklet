@@ -35,7 +35,6 @@ javascript:(function() {
     const diffImg=document.querySelector('img.playlog_diff.v_b')?.src||null;
     const difficulty=diffImg?diffImg.match(/diff_([a-z]+)\.png$/i)?.[1]:null;
     console.log({
-        songName,
         level,
         jacketImg,
         trackCount,
@@ -147,6 +146,7 @@ javascript:(function() {
         alert("해답을 찾지 못했습니다.\n계산 로직을 확인해보세요.");
     }
 })();
+
 
 
 
