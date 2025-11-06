@@ -109,10 +109,10 @@ javascript:(function () {
 <style>
     *{box-sizing:border-box;}
     body{font-family:'Segoe UI',Arial,sans-serif;background:linear-gradient(135deg,#0a0a0a 0%,#1a1a2e 50%,#16213e 100%);color:#eee;margin:0;padding:20px;overflow-x:auto;}
-    .container{max-width:1000px;margin:0 auto;padding:20px;background:rgba(30,30,40,0.95);border-radius:15px;box-shadow:0 20px 40px rgba(0,0,0,0.5);backdrop-filter:blur(10px);}
+    .container{max-width:1200px;margin:0 auto;padding:20px;background:rgba(30,30,40,0.95);border-radius:15px;box-shadow:0 20px 40px rgba(0,0,0,0.5);backdrop-filter:blur(10px);}
     .header{position:relative;text-align:center;margin-bottom:30px;}
     .header img{width:100%;max-height:280px;object-fit:cover;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,0.7);}
-    .header .title{position:absolute;bottom:15px;left:15px;right:15px;font-size:2.5rem;font-weight:900;text-shadow:0 0 8px #000,0 0 12px #000;color:#fff;-webkit-text-stroke:2px #000;text-stroke:2px #000;}
+    .header .title{position:absolute;bottom:15px;left:15px;right:15px;font-size:2.5rem;font-weight:900;color:#fff;-webkit-text-stroke:2px #000;text-stroke:2px #000;text-shadow:0 0 8px #000;}
     .header .info{position:absolute;top:15px;right:15px;text-align:right;font-size:1.1rem;background:rgba(0,0,0,0.8);padding:12px 15px;border-radius:10px;}
     .header .info div{margin:6px 0;}
     .diff-box{padding:8px 16px;border-radius:8px;display:inline-block;font-weight:900;font-size:1.2rem;text-shadow:1px 1px 2px #000;}
@@ -122,23 +122,22 @@ javascript:(function () {
     .master{background:linear-gradient(45deg,#9c27b0,#7b1fa2);color:#fff;}
     .reMaster{background:linear-gradient(45deg,#e1bee7,#ce93d8);color:#000;}
     table{border-collapse:collapse;width:100%;margin-top:25px;border:4px solid #ffeb3b;box-shadow:0 10px 30px rgba(255,235,59,0.3);}
-    th,td{border:2px solid #ffeb3b;padding:10px 6px;text-align:center;position:relative;font-weight:600;font-size:1.1rem;}
-    th{background:linear-gradient(45deg,#333,#555);color:#ffeb3b;font-size:1.1rem;}
+    th,td{border:2px solid #ffeb3b;padding:8px 4px;text-align:center;position:relative;font-weight:600;font-size:1rem;}
+    th{background:linear-gradient(45deg,#333,#555);color:#ffeb3b;font-size:1rem;}
     .crit{background:linear-gradient(45deg,#fff9c4,#fff176);color:#000;font-weight:900;}
     .perf{background:linear-gradient(45deg,#ffeb3b,#fdd835);color:#000;font-weight:900;}
     .great{background:linear-gradient(45deg,#f8bbd9,#f48fb1);color:#000;}
     .good{background:linear-gradient(45deg,#a5d6a7,#81c784);color:#000;}
     .miss{background:linear-gradient(45deg,#757575,#616161);color:#fff;}
-    .ach{background:linear-gradient(45deg,#424242,#212121);color:#ffeb3b;font-weight:900;}
-    .count{font-size:1.8rem;font-weight:900;line-height:1;}
-    .arrow{cursor:pointer;font-size:0.9rem;margin:0 2px;color:#ff5722;transition:all 0.2s;opacity:0.8;}
-    .arrow:hover{color:#ffeb3b;opacity:1;transform:scale(1.3);}
+    .total{background:linear-gradient(45deg,#424242,#212121);color:#ffeb3b;font-weight:900;}
+    .count{font-size:1.6rem;font-weight:900;line-height:1;display:block;}
     .loss{font-size:0.7rem;display:block;margin-top:2px;font-weight:700;opacity:0.9;}
-    .crit .loss{color:#ff9800;}
-    .perf .loss{color:#f57c00;}
+    .crit .loss,.perf .loss{color:transparent;}
     .great .loss{color:#c2185b;}
     .good .loss{color:#388e3c;}
     .miss .loss{color:#bbb;}
+    .arrow{cursor:pointer;font-size:0.8rem;margin:0 1px;color:#ff5722;transition:all 0.2s;opacity:0.8;}
+    .arrow:hover{color:#ffeb3b;opacity:1;transform:scale(1.3);}
     .finalRate{font-size:3.5rem;font-weight:900;margin:30px 0;text-align:center;background:linear-gradient(45deg,#ffeb3b,#ff9800);background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-shadow:0 0 20px rgba(255,235,59,0.5);}
     .resetBtn{display:block;margin:20px auto 0;padding:12px 30px;background:linear-gradient(45deg,#f44336,#d32f2f);color:#fff;border:none;border-radius:25px;cursor:pointer;font-weight:900;font-size:1.2rem;transition:all 0.3s;box-shadow:0 5px 15px rgba(244,67,54,0.4);}
     .resetBtn:hover{background:linear-gradient(45deg,#ff5722,#e64a19);transform:translateY(-2px);box-shadow:0 8px 25px rgba(244,67,54,0.6);}
@@ -165,23 +164,27 @@ javascript:(function () {
                 <th class="great">GREAT</th>
                 <th class="good">GOOD</th>
                 <th class="miss">MISS</th>
-                <th class="ach">ACH</th>
             </tr>
         </thead>
         <tbody>
-            <tr><td>TAP</td><td class="val crit" data-type="tap" data-j="CRITICAL"></td><td class="val perf" data-type="tap" data-j="PERFECT"></td><td class="val great" data-type="tap" data-j="GREAT"></td><td class="val good" data-type="tap" data-j="GOOD"></td><td class="val miss" data-type="tap" data-j="MISS"></td><td class="ach" id="ach_tap"></td></tr>
-            <tr><td>HOLD</td><td class="val crit" data-type="hold" data-j="CRITICAL"></td><td class="val perf" data-type="hold" data-j="PERFECT"></td><td class="val great" data-type="hold" data-j="GREAT"></td><td class="val good" data-type="hold" data-j="GOOD"></td><td class="val miss" data-type="hold" data-j="MISS"></td><td class="ach" id="ach_hold"></td></tr>
-            <tr><td>SLIDE</td><td class="val crit" data-type="slide" data-j="CRITICAL"></td><td class="val perf" data-type="slide" data-j="PERFECT"></td><td class="val great" data-type="slide" data-j="GREAT"></td><td class="val good" data-type="slide" data-j="GOOD"></td><td class="val miss" data-type="slide" data-j="MISS"></td><td class="ach" id="ach_slide"></td></tr>
-            <tr><td>TOUCH</td><td class="val crit" data-type="touch" data-j="CRITICAL"></td><td class="val perf" data-type="touch" data-j="PERFECT"></td><td class="val great" data-type="touch" data-j="GREAT"></td><td class="val good" data-type="touch" data-j="GOOD"></td><td class="val miss" data-type="touch" data-j="MISS"></td><td class="ach" id="ach_touch"></td></tr>
+            <tr><td>TAP</td><td class="val crit" data-type="tap" data-j="CRITICAL"></td><td class="val perf" data-type="tap" data-j="PERFECT"></td><td class="val great" data-type="tap" data-j="GREAT"></td><td class="val good" data-type="tap" data-j="GOOD"></td><td class="val miss" data-type="tap" data-j="MISS"></td></tr>
+            <tr><td>HOLD</td><td class="val crit" data-type="hold" data-j="CRITICAL"></td><td class="val perf" data-type="hold" data-j="PERFECT"></td><td class="val great" data-type="hold" data-j="GREAT"></td><td class="val good" data-type="hold" data-j="GOOD"></td><td class="val miss" data-type="hold" data-j="MISS"></td></tr>
+            <tr><td>SLIDE</td><td class="val crit" data-type="slide" data-j="CRITICAL"></td><td class="val perf" data-type="slide" data-j="PERFECT"></td><td class="val great" data-type="slide" data-j="GREAT"></td><td class="val good" data-type="slide" data-j="GOOD"></td><td class="val miss" data-type="slide" data-j="MISS"></td></tr>
+            <tr><td>TOUCH</td><td class="val crit" data-type="touch" data-j="CRITICAL"></td><td class="val perf" data-type="touch" data-j="PERFECT"></td><td class="val great" data-type="touch" data-j="GREAT"></td><td class="val good" data-type="touch" data-j="GOOD"></td><td class="val miss" data-type="touch" data-j="MISS"></td></tr>
             <tr><td>BREAK</td>
                 <td class="val crit" data-type="breaks" data-j="CRITICAL"></td>
                 <td class="val perf" id="breakPerf"><span class="count">0</span>-<span class="count">0</span></td>
                 <td class="val great" id="breakGreat"><span class="count">0</span>-<span class="count">0</span>-<span class="count">0</span></td>
                 <td class="val good" data-type="breaks" data-j="GOOD"></td>
                 <td class="val miss" data-type="breaks" data-j="MISS"></td>
-                <td class="ach" id="ach_break"></td>
             </tr>
-            <tr><td><b>TOTAL</b></td><td colspan="5" id="totalCounts"></td><td class="ach" id="ach_total"></td></tr>
+            <tr><td class="total"><b>TOTAL</b></td>
+                <td class="val total crit" id="total_cp"></td>
+                <td class="val total perf" id="total_p"></td>
+                <td class="val total great" id="total_g"></td>
+                <td class="val total good" id="total_go"></td>
+                <td class="val total miss" id="total_m"></td>
+            </tr>
         </tbody>
     </table>
     <div class="finalRate" id="finalRate">101.0000%</div>
@@ -193,7 +196,7 @@ const raw = localStorage.getItem('maimaiResultData');
 if (!raw) { document.body.innerHTML = '<h1 style="color:#f66;text-align:center;">데이터 없음</h1>'; throw new Error('No data'); }
 const d = JSON.parse(raw);
 const orig = JSON.parse(JSON.stringify(d.notes));
-const sol = d.solutions;
+const sol = d.solutions || { '75%Perfect':0, '50%Perfect':0, '80%Great':0, '60%Great':0, '50%Great':0 };
 const noteTypes = ['tap','hold','slide','touch','breaks'];
 const weights = {tap:1, hold:2, slide:3, touch:1, breaks:5};
 
@@ -211,11 +214,19 @@ if (diffClass) lvl.className = 'diff-box ' + diffClass;
 function getTotal(note) { return note.CRITICAL + note.PERFECT + note.GREAT + note.GOOD + note.MISS; }
 function getMaxScore(note, w) { return getTotal(note) * w; }
 function getScore(note, w) { return (note.CRITICAL + note.PERFECT) * w + note.GREAT * w * 0.8 + note.GOOD * w * 0.5; }
-function getLoss(note, w) { const max = getMaxScore(note, w); return max === 0 ? '0.0000' : ((max - getScore(note, w)) / max * 100).toFixed(4); }
+function getJudgmentLoss(type, jud, count) {
+    if (count === 0) return '0.0000';
+    const w = weights[type];
+    if (jud === 'CRITICAL' || jud === 'PERFECT') return '0.0000';
+    if (jud === 'GREAT') return ((1 - 0.8) * w * count / getMaxScore(d.notes[type], w) * 100).toFixed(4);
+    if (jud === 'GOOD') return ((1 - 0.5) * w * count / getMaxScore(d.notes[type], w) * 100).toFixed(4);
+    if (jud === 'MISS') return (w * count / getMaxScore(d.notes[type], w) * 100).toFixed(4);
+    return '0.0000';
+}
 function getBreakBonus() {
     const b = d.notes.breaks; const B = getTotal(b); if (B === 0) return 0;
-    const p75 = sol ? sol['75%Perfect'] : 0; const p50 = sol ? sol['50%Perfect'] : 0;
-    const g80 = sol ? sol['80%Great'] : 0; const g60 = sol ? sol['60%Great'] : 0; const g50 = sol ? sol['50%Great'] : 0;
+    const p75 = sol['75%Perfect'], p50 = sol['50%Perfect'];
+    const g80 = sol['80%Great'], g60 = sol['60%Great'], g50 = sol['50%Great'];
     return (b.CRITICAL * 1.0 + p75 * 0.75 + p50 * 0.5 + (g80 + g60 + g50) * 0.4 + b.GOOD * 0.3) / B;
 }
 
@@ -225,11 +236,22 @@ function calcAll() {
     const notePct = W === 0 ? 0 : (S / W * 100);
     const bonusPct = getBreakBonus();
     const totalPct = notePct + bonusPct;
-    noteTypes.forEach(t => { const el = document.getElementById('ach_' + t); if (el) el.innerHTML = '<b>-' + getLoss(d.notes[t], weights[t]) + '%</b>'; });
-    const totalEl = document.getElementById('ach_total'); if (totalEl) totalEl.innerHTML = '<b>' + totalPct.toFixed(4) + '%</b>';
-    const finalEl = document.getElementById('finalRate'); if (finalEl) finalEl.textContent = totalPct.toFixed(4) + '%';
-    const totals = noteTypes.map(t => getTotal(d.notes[t]));
-    const totalCountEl = document.getElementById('totalCounts'); if (totalCountEl) totalCountEl.textContent = totals.join(' / ');
+    document.getElementById('finalRate').textContent = totalPct.toFixed(4) + '%';
+
+    // TOTAL 행 계산
+    const totals = { CRITICAL:0, PERFECT:0, GREAT:0, GOOD:0, MISS:0 };
+    let totalLoss = 0;
+    noteTypes.forEach(t => {
+        const n = d.notes[t];
+        totals.CRITICAL += n.CRITICAL; totals.PERFECT += n.PERFECT; totals.GREAT += n.GREAT; totals.GOOD += n.GOOD; totals.MISS += n.MISS;
+    });
+    ['CRITICAL','PERFECT','GREAT','GOOD','MISS'].forEach(j => {
+        const el = document.getElementById('total_' + j.toLowerCase().slice(0,1));
+        if (el) {
+            const loss = getJudgmentLoss('tap', j, totals[j]); // 임시
+            el.innerHTML = \`<span class="count">\${totals[j]}</span><span class="loss">-\${\${loss}%}</span>\`;
+        }
+    });
 }
 
 function updateCell(cell) {
@@ -246,8 +268,8 @@ function updateCell(cell) {
     if (type !== 'breaks' || (jud !== 'PERFECT' && jud !== 'GREAT')) {
         cell.appendChild(makeArrow(cell, 1)); cell.appendChild(makeArrow(cell, -1));
     }
-    if (type !== 'breaks') {
-        const loss = getLoss(d.notes[type], weights[type]);
+    const loss = getJudgmentLoss(type, jud, val);
+    if (loss !== '0.0000') {
         const lossSpan = document.createElement('div'); lossSpan.className = 'loss'; lossSpan.textContent = '-' + loss + '%'; cell.appendChild(lossSpan);
     }
 }
@@ -265,15 +287,15 @@ function adjust(cell, delta) {
     if (jud === 'CRITICAL' || jud === 'PERFECT') {
         note[jud] = target;
         const diff = Math.abs(delta);
-        if (delta > 0) { // 올릴 때: MISS → GOOD → GREAT 순으로 줄임
+        if (delta > 0) {
             let remain = diff;
             if (note.MISS >= remain) { note.MISS -= remain; remain = 0; }
             else { remain -= note.MISS; note.MISS = 0; }
             if (remain > 0 && note.GOOD >= remain) { note.GOOD -= remain; remain = 0; }
             else if (remain > 0) { remain -= note.GOOD; note.GOOD = 0; }
             if (remain > 0 && note.GREAT >= remain) { note.GREAT -= remain; }
-            else if (remain > 0) return; // 부족하면 실패
-        } else { // 내릴 때: GREAT → GOOD → MISS 순으로 늘림
+            else if (remain > 0) return;
+        } else {
             note.GREAT += diff;
         }
     } else {
@@ -288,7 +310,8 @@ function adjust(cell, delta) {
             note.CRITICAL += Math.abs(delta);
         }
     }
-    document.querySelectorAll(\`td[data-type="\${type}"]\`).forEach(updateCell); calcAll();
+    document.querySelectorAll(\`td[data-type="\${type}"]\`).forEach(updateCell);
+    calcAll();
 }
 
 document.querySelectorAll('td.val').forEach(cell => { const type = cell.dataset.type; const jud = cell.dataset.j; if (!type || !jud) return; cell.dataset.orig = d.notes[type][jud]; updateCell(cell); });
