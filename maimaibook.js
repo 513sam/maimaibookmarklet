@@ -112,7 +112,7 @@ javascript:(function () {
     .container{max-width:1000px;margin:0 auto;padding:20px;background:rgba(30,30,40,0.95);border-radius:15px;box-shadow:0 20px 40px rgba(0,0,0,0.5);backdrop-filter:blur(10px);}
     .header{position:relative;text-align:center;margin-bottom:30px;}
     .header img{width:100%;max-height:280px;object-fit:cover;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,0.7);}
-    .header .title{position:absolute;bottom:15px;left:15px;right:15px;font-size:2.5rem;font-weight:900;text-shadow:3px 3px 6px #000;background:linear-gradient(45deg,#ffeb3b,#ff9800);background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+    .header .title{position:absolute;bottom:15px;left:15px;right:15px;font-size:2.5rem;font-weight:900;text-shadow:0 0 8px #000,0 0 12px #000;color:#fff;-webkit-text-stroke:2px #000;text-stroke:2px #000;}
     .header .info{position:absolute;top:15px;right:15px;text-align:right;font-size:1.1rem;background:rgba(0,0,0,0.8);padding:12px 15px;border-radius:10px;}
     .header .info div{margin:6px 0;}
     .diff-box{padding:8px 16px;border-radius:8px;display:inline-block;font-weight:900;font-size:1.2rem;text-shadow:1px 1px 2px #000;}
@@ -195,7 +195,6 @@ const d = JSON.parse(raw);
 const orig = JSON.parse(JSON.stringify(d.notes));
 const sol = d.solutions;
 const noteTypes = ['tap','hold','slide','touch','breaks'];
-const judgments = ['CRITICAL','PERFECT','GREAT','GOOD','MISS'];
 const weights = {tap:1, hold:2, slide:3, touch:1, breaks:5};
 
 document.getElementById('jacket').src = d.jacketImg || '';
@@ -262,23 +261,32 @@ function adjust(cell, delta) {
     const type = cell.dataset.type; const jud = cell.dataset.j; if (!type || !jud) return;
     const note = d.notes[type]; let cur = note[jud] || 0; let target = cur + delta;
     if (target < 0) return; const total = getTotal(note); if (target > total) return;
+
     if (jud === 'CRITICAL' || jud === 'PERFECT') {
-        note[jud] = target; const diff = Math.abs(delta);
-        if (delta < 0) { note.GREAT += diff; } else {
-            if (note.GREAT >= diff) { note.GREAT -= diff; } else {
-                const remain = diff - note.GREAT; note.GREAT = 0;
-                if (note.PERFECT >= remain) { note.PERFECT -= remain; } else return;
-            }
+        note[jud] = target;
+        const diff = Math.abs(delta);
+        if (delta > 0) { // 올릴 때: MISS → GOOD → GREAT 순으로 줄임
+            let remain = diff;
+            if (note.MISS >= remain) { note.MISS -= remain; remain = 0; }
+            else { remain -= note.MISS; note.MISS = 0; }
+            if (remain > 0 && note.GOOD >= remain) { note.GOOD -= remain; remain = 0; }
+            else if (remain > 0) { remain -= note.GOOD; note.GOOD = 0; }
+            if (remain > 0 && note.GREAT >= remain) { note.GREAT -= remain; }
+            else if (remain > 0) return; // 부족하면 실패
+        } else { // 내릴 때: GREAT → GOOD → MISS 순으로 늘림
+            note.GREAT += diff;
         }
     } else {
-        const cpTotal = note.CRITICAL + note.PERFECT; if (delta > 0 && cpTotal < delta) return;
+        const cpTotal = note.CRITICAL + note.PERFECT;
+        if (delta > 0 && cpTotal < delta) return;
         note[jud] = target;
         if (delta > 0) {
-            let remain = delta; if (note.CRITICAL >= remain) { note.CRITICAL -= remain; } else {
-                remain -= note.CRITICAL; note.CRITICAL = 0;
-                if (note.PERFECT >= remain) { note.PERFECT -= remain; } else return;
-            }
-        } else { note.CRITICAL += Math.abs(delta); }
+            let remain = delta;
+            if (note.CRITICAL >= remain) { note.CRITICAL -= remain; }
+            else { remain -= note.CRITICAL; note.CRITICAL = 0; if (note.PERFECT >= remain) { note.PERFECT -= remain; } else return; }
+        } else {
+            note.CRITICAL += Math.abs(delta);
+        }
     }
     document.querySelectorAll(\`td[data-type="\${type}"]\`).forEach(updateCell); calcAll();
 }
