@@ -8,7 +8,6 @@
     const d = JSON.parse(raw);
     const sol = d.solutions;
 
-    // HTML 내부에 데이터 삽입 (템플릿 리터럴)
     const html = `<!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -58,16 +57,13 @@
 <body>
 <div class="container">
     <div class="header">
-        <img id="jacket" src="${d.jacketImg || ''}" alt="Jacket">
-        <div class="title" id="songName">${d.songName || 'Unknown'}</div>
+        <img id="jacket" src="" alt="Jacket">
+        <div class="title" id="songName"></div>
         <div class="info">
-            <div id="track">Track ${d.trackCount || '?'}</div>
-            <div id="time">${d.realTime || '??:??'}</div>
-            <div id="kind">${d.musicKind === 'standard' ? 'Standard' : d.musicKind === 'delux' ? 'DX' : '?'}</div>
-            <div><span id="level" class="diff-box ${(() => {
-                const map = {basic:'basic', advanced:'advanced', expert:'expert', master:'master', reMaster:'reMaster'};
-                return map[d.difficulty] || '';
-            })()}">Lv.${d.level || '??'}</span></div>
+            <div id="track"></div>
+            <div id="time"></div>
+            <div id="kind"></div>
+            <div><span id="level" class="diff-box"></span></div>
         </div>
     </div>
     
@@ -84,16 +80,16 @@
             </tr>
         </thead>
         <tbody>
-            <tr><td>TAP</td><td class="val crit" data-type="tap" data-j="CRITICAL">${d.notes.tap.CRITICAL}</td><td class="val perf" data-type="tap" data-j="PERFECT">${d.notes.tap.PERFECT}</td><td class="val great" data-type="tap" data-j="GREAT">${d.notes.tap.GREAT}</td><td class="val good" data-type="tap" data-j="GOOD">${d.notes.tap.GOOD}</td><td class="val miss" data-type="tap" data-j="MISS">${d.notes.tap.MISS}</td><td class="ach" id="ach_tap"></td></tr>
-            <tr><td>HOLD</td><td class="val crit" data-type="hold" data-j="CRITICAL">${d.notes.hold.CRITICAL}</td><td class="val perf" data-type="hold" data-j="PERFECT">${d.notes.hold.PERFECT}</td><td class="val great" data-type="hold" data-j="GREAT">${d.notes.hold.GREAT}</td><td class="val good" data-type="hold" data-j="GOOD">${d.notes.hold.GOOD}</td><td class="val miss" data-type="hold" data-j="MISS">${d.notes.hold.MISS}</td><td class="ach" id="ach_hold"></td></tr>
-            <tr><td>SLIDE</td><td class="val crit" data-type="slide" data-j="CRITICAL">${d.notes.slide.CRITICAL}</td><td class="val perf" data-type="slide" data-j="PERFECT">${d.notes.slide.PERFECT}</td><td class="val great" data-type="slide" data-j="GREAT">${d.notes.slide.GREAT}</td><td class="val good" data-type="slide" data-j="GOOD">${d.notes.slide.GOOD}</td><td class="val miss" data-type="slide" data-j="MISS">${d.notes.slide.MISS}</td><td class="ach" id="ach_slide"></td></tr>
-            <tr><td>TOUCH</td><td class="val crit" data-type="touch" data-j="CRITICAL">${d.notes.touch.CRITICAL}</td><td class="val perf" data-type="touch" data-j="PERFECT">${d.notes.touch.PERFECT}</td><td class="val great" data-type="touch" data-j="GREAT">${d.notes.touch.GREAT}</td><td class="val good" data-type="touch" data-j="GOOD">${d.notes.touch.GOOD}</td><td class="val miss" data-type="touch" data-j="MISS">${d.notes.touch.MISS}</td><td class="ach" id="ach_touch"></td></tr>
+            <tr><td>TAP</td><td class="val crit" data-type="tap" data-j="CRITICAL"></td><td class="val perf" data-type="tap" data-j="PERFECT"></td><td class="val great" data-type="tap" data-j="GREAT"></td><td class="val good" data-type="tap" data-j="GOOD"></td><td class="val miss" data-type="tap" data-j="MISS"></td><td class="ach" id="ach_tap"></td></tr>
+            <tr><td>HOLD</td><td class="val crit" data-type="hold" data-j="CRITICAL"></td><td class="val perf" data-type="hold" data-j="PERFECT"></td><td class="val great" data-type="hold" data-j="GREAT"></td><td class="val good" data-type="hold" data-j="GOOD"></td><td class="val miss" data-type="hold" data-j="MISS"></td><td class="ach" id="ach_hold"></td></tr>
+            <tr><td>SLIDE</td><td class="val crit" data-type="slide" data-j="CRITICAL"></td><td class="val perf" data-type="slide" data-j="PERFECT"></td><td class="val great" data-type="slide" data-j="GREAT"></td><td class="val good" data-type="slide" data-j="GOOD"></td><td class="val miss" data-type="slide" data-j="MISS"></td><td class="ach" id="ach_slide"></td></tr>
+            <tr><td>TOUCH</td><td class="val crit" data-type="touch" data-j="CRITICAL"></td><td class="val perf" data-type="touch" data-j="PERFECT"></td><td class="val great" data-type="touch" data-j="GREAT"></td><td class="val good" data-type="touch" data-j="GOOD"></td><td class="val miss" data-type="touch" data-j="MISS"></td><td class="ach" id="ach_touch"></td></tr>
             <tr><td>BREAK</td>
-                <td class="val crit" data-type="breaks" data-j="CRITICAL">${d.notes.breaks.CRITICAL}</td>
-                <td class="val perf" id="breakPerf">${sol ? sol['75%Perfect'] + '-' + sol['50%Perfect'] : '0-0'}</td>
-                <td class="val great" id="breakGreat">${sol ? sol['80%Great'] + '-' + sol['60%Great'] + '-' + sol['50%Great'] : '0-0-0'}</td>
-                <td class="val good" data-type="breaks" data-j="GOOD">${d.notes.breaks.GOOD}</td>
-                <td class="val miss" data-type="breaks" data-j="MISS">${d.notes.breaks.MISS}</td>
+                <td class="val crit" data-type="breaks" data-j="CRITICAL"></td>
+                <td class="val perf" id="breakPerf">0-0</td>
+                <td class="val great" id="breakGreat">0-0-0</td>
+                <td class="val good" data-type="breaks" data-j="GOOD"></td>
+                <td class="val miss" data-type="breaks" data-j="MISS"></td>
                 <td class="ach" id="ach_break"></td>
             </tr>
             <tr><td><b>TOTAL</b></td><td colspan="5" id="totalCounts"></td><td class="ach" id="ach_total"></td></tr>
@@ -105,7 +101,12 @@
 </div>
 
 <script>
-const d = ${JSON.stringify(d)};
+const raw = localStorage.getItem('maimaiResultData');
+if (!raw) {
+    document.body.innerHTML = '<h1 style="color:#f66;text-align:center;">데이터 없음</h1>';
+    throw new Error('No data');
+}
+const d = JSON.parse(raw);
 const orig = JSON.parse(JSON.stringify(d.notes));
 const sol = d.solutions;
 
@@ -119,6 +120,23 @@ noteTypes.forEach(t => {
         if (cell) cell.dataset.orig = d.notes[t][j];
     });
 });
+
+document.getElementById('jacket').src = d.jacketImg || '';
+document.getElementById('songName').textContent = d.songName || 'Unknown';
+document.getElementById('track').textContent = 'Track ' + (d.trackCount || '?');
+document.getElementById('time').textContent = d.realTime || '??:??';
+document.getElementById('kind').textContent = d.musicKind === 'standard' ? 'Standard' : d.musicKind === 'delux' ? 'DX' : '?';
+
+const lvl = document.getElementById('level');
+lvl.textContent = 'Lv.' + (d.level || '??');
+const diffMap = {basic:'basic', advanced:'advanced', expert:'expert', master:'master', reMaster:'reMaster'};
+const diffClass = diffMap[d.difficulty] || '';
+if (diffClass) lvl.className = 'diff-box ' + diffClass;
+
+if (sol) {
+    document.getElementById('breakPerf').textContent = sol['75%Perfect'] + '-' + sol['50%Perfect'];
+    document.getElementById('breakGreat').textContent = sol['80%Great'] + '-' + sol['60%Great'] + '-' + sol['50%Great'];
+}
 
 function getTotal(note) { return note.CRITICAL + note.PERFECT + note.GREAT + note.GOOD + note.MISS; }
 function getMaxScore(note, w) { return getTotal(note) * w; }
@@ -239,6 +257,8 @@ document.querySelectorAll('td.val').forEach(td => {
     const jud = td.dataset.j;
     if (!type || !jud) return;
     
+    const val = d.notes[type][jud];
+    td.innerHTML = val;
     td.appendChild(makeArrow(td, 1));
     td.appendChild(makeArrow(td, -1));
     
@@ -277,9 +297,10 @@ calcAll();
 </body>
 </html>`;
 
-    // data: URL 생성
-    const dataUrl = 'data:text/html;charset=utf-8,' + encodeURIComponent(html);
-    window.open(dataUrl, '_blank');
+    // blob 없이, 그냥 새 탭 열기
+    const blob = new Blob([html], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    window.open(url, '_blank');
 
     if (sol) {
         alert(`분석 완료!\n새 탭에서 확인하세요\n\nBREAK PERFECT: ${sol['75%Perfect']}-${sol['50%Perfect']}\nBREAK GREAT: ${sol['80%Great']}-${sol['60%Great']}-${sol['50%Great']}`);
