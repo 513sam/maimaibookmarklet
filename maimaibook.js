@@ -14,7 +14,7 @@ javascript:(function () {
     const slidePerfect = parseInt(document.querySelector('body > div.wrapper.main_wrapper.t_c > div.gray_block.m_10.m_t_0.p_b_5.f_0 > div:nth-child(4) > table > tbody > tr:nth-child(4) > td:nth-child(3)')?.textContent.trim(), 10) || 0;
     const slideGreat = parseInt(document.querySelector('body > div.wrapper.main_wrapper.t_c > div.gray_block.m_10.m_t_0.p_b_5.f_0 > div:nth-child(4) > table > tbody > tr:nth-child(4) > td:nth-child(4)')?.textContent.trim(), 10) || 0;
     const slideGood = parseInt(document.querySelector('body > div.wrapper.main_wrapper.t_c > div.gray_block.m_10.m_t_0.p_b_5.f_0 > div:nth-child(4) > table > tbody > tr:nth-child(4) > td:nth-child(5)')?.textContent.trim(), 10) || 0;
-    const slideMiss = parseInt(document.querySelector('body > div.wrapper.main_wrapper.t_c > div.gray_block.m_10.m_t_0.p_b_5.f_0 > div:nth-child(4) > table > tbody > tr:nth-child(4) > td:nth-child(6)')?.textContent.trim(), 10) || 0;
+    const slideMiss = parseInt(document.querySelector('body > div.wrapper.main_wrapper.t_c > div.gray232_block.m_10.m_t_0.p_b_5.f_0 > div:nth-child(4) > table > tbody > tr:nth-child(4) > td:nth-child(6)')?.textContent.trim(), 10) || 0;
     const touchCrit = parseInt(document.querySelector('body > div.wrapper.main_wrapper.t_c > div.gray_block.m_10.m_t_0.p_b_5.f_0 > div:nth-child(4) > table > tbody > tr:nth-child(5) > td:nth-child(2)')?.textContent.trim(), 10) || 0;
     const touchPerfect = parseInt(document.querySelector('body > div.wrapper.main_wrapper.t_c > div.gray_block.m_10.m_t_0.p_b_5.f_0 > div:nth-child(4) > table > tbody > tr:nth-child(5) > td:nth-child(3)')?.textContent.trim(), 10) || 0;
     const touchGreat = parseInt(document.querySelector('body > div.wrapper.main_wrapper.t_c > div.gray_block.m_10.m_t_0.p_b_5.f_0 > div:nth-child(4) > table > tbody > tr:nth-child(5) > td:nth-child(4)')?.textContent.trim(), 10) || 0;
@@ -173,8 +173,8 @@ javascript:(function () {
             <tr><td>TOUCH</td><td class="val crit" data-type="touch" data-j="CRITICAL"></td><td class="val perf" data-type="touch" data-j="PERFECT"></td><td class="val great" data-type="touch" data-j="GREAT"></td><td class="val good" data-type="touch" data-j="GOOD"></td><td class="val miss" data-type="touch" data-j="MISS"></td></tr>
             <tr><td>BREAK</td>
                 <td class="val crit" data-type="breaks" data-j="CRITICAL"></td>
-                <td class="val perf" id="breakPerf"><span class="count">0</span>-<span class="count">0</span></td>
-                <td class="val great" id="breakGreat"><span class="count">0</span>-<span class="count">0</span>-<span class="count">0</span></td>
+                <td class="val perf" id="breakPerf"></td>
+                <td class="val great" id="breakGreat"></td>
                 <td class="val good" data-type="breaks" data-j="GOOD"></td>
                 <td class="val miss" data-type="breaks" data-j="MISS"></td>
             </tr>
@@ -200,6 +200,7 @@ const sol = d.solutions || { '75%Perfect':0, '50%Perfect':0, '80%Great':0, '60%G
 const noteTypes = ['tap','hold','slide','touch','breaks'];
 const weights = {tap:1, hold:2, slide:3, touch:1, breaks:5};
 
+// 헤더 정보
 document.getElementById('jacket').src = d.jacketImg || '';
 document.getElementById('songName').textContent = d.songName || 'Unknown';
 document.getElementById('track').textContent = 'Track ' + (d.trackCount || '?');
@@ -214,6 +215,8 @@ if (diffClass) lvl.className = 'diff-box ' + diffClass;
 function getTotal(note) { return note.CRITICAL + note.PERFECT + note.GREAT + note.GOOD + note.MISS; }
 function getMaxScore(note, w) { return getTotal(note) * w; }
 function getScore(note, w) { return (note.CRITICAL + note.PERFECT) * w + note.GREAT * w * 0.8 + note.GOOD * w * 0.5; }
+
+// 판정별 실점 (노트 종류별)
 function getJudgmentLoss(type, jud, count) {
     if (count === 0) return '0.0000';
     const w = weights[type];
@@ -223,11 +226,10 @@ function getJudgmentLoss(type, jud, count) {
     if (jud === 'MISS') return (w * count / getMaxScore(d.notes[type], w) * 100).toFixed(4);
     return '0.0000';
 }
+
 function getBreakBonus() {
     const b = d.notes.breaks; const B = getTotal(b); if (B === 0) return 0;
-    const p75 = sol['75%Perfect'], p50 = sol['50%Perfect'];
-    const g80 = sol['80%Great'], g60 = sol['60%Great'], g50 = sol['50%Great'];
-    return (b.CRITICAL * 1.0 + p75 * 0.75 + p50 * 0.5 + (g80 + g60 + g50) * 0.4 + b.GOOD * 0.3) / B;
+    return (b.CRITICAL * 1.0 + sol['75%Perfect'] * 0.75 + sol['50%Perfect'] * 0.5 + (sol['80%Great'] + sol['60%Great'] + sol['50%Great']) * 0.4 + b.GOOD * 0.3) / B;
 }
 
 function calcAll() {
@@ -238,32 +240,28 @@ function calcAll() {
     const totalPct = notePct + bonusPct;
     document.getElementById('finalRate').textContent = totalPct.toFixed(4) + '%';
 
-    // TOTAL 행 계산
+    // TOTAL 행
     const totals = { CRITICAL:0, PERFECT:0, GREAT:0, GOOD:0, MISS:0 };
     let totalLoss = 0;
     noteTypes.forEach(t => {
         const n = d.notes[t];
-        totals.CRITICAL += n.CRITICAL; totals.PERFECT += n.PERFECT; totals.GREAT += n.GREAT; totals.GOOD += n.GOOD; totals.MISS += n.MISS;
+        ['CRITICAL','PERFECT','GREAT','GOOD','MISS'].forEach(j => {
+            totals[j] += n[j];
+            if (j !== 'CRITICAL' && j !== 'PERFECT') {
+                totalLoss += parseFloat(getJudgmentLoss(t, j, n[j]));
+            }
+        });
     });
-    ['CRITICAL','PERFECT','GREAT','GOOD','MISS'].forEach(j => {
-        const el = document.getElementById('total_' + j.toLowerCase().slice(0,1));
-        if (el) {
-            const loss = getJudgmentLoss('tap', j, totals[j]); // 임시
-            el.innerHTML = \`<span class="count">\${totals[j]}</span><span class="loss">-\${\${loss}%}</span>\`;
-        }
-    });
+    document.getElementById('total_cp').innerHTML = \`<span class="count">\${totals.CRITICAL + totals.PERFECT}</span>\`;
+    document.getElementById('total_g').innerHTML = \`<span class="count">\${totals.GREAT}</span><span class="loss">-\${getJudgmentLoss('tap', 'GREAT', totals.GREAT)}%</span>\`;
+    document.getElementById('total_go').innerHTML = \`<span class="count">\${totals.GOOD}</span><span class="loss">-\${getJudgmentLoss('tap', 'GOOD', totals.GOOD)}%</span>\`;
+    document.getElementById('total_m').innerHTML = \`<span class="count">\${totals.MISS}</span><span class="loss">-\${getJudgmentLoss('tap', 'MISS', totals.MISS)}%</span>\`;
 }
 
 function updateCell(cell) {
     const type = cell.dataset.type; const jud = cell.dataset.j; if (!type || !jud) return;
     const val = d.notes[type][jud];
-    if (type === 'breaks' && (jud === 'PERFECT' || jud === 'GREAT')) {
-        cell.innerHTML = jud === 'PERFECT' 
-            ? \`<span class="count">\${sol['75%Perfect']}</span>-<span class="count">\${sol['50%Perfect']}</span>\`
-            : \`<span class="count">\${sol['80%Great']}</span>-<span class="count">\${sol['60%Great']}</span>-<span class="count">\${sol['50%Great']}</span>\`;
-        return;
-    }
-    cell.querySelectorAll('.arrow, .loss, .count').forEach(el => el.remove());
+    cell.innerHTML = '';
     const countSpan = document.createElement('div'); countSpan.className = 'count'; countSpan.textContent = val; cell.appendChild(countSpan);
     if (type !== 'breaks' || (jud !== 'PERFECT' && jud !== 'GREAT')) {
         cell.appendChild(makeArrow(cell, 1)); cell.appendChild(makeArrow(cell, -1));
@@ -311,13 +309,35 @@ function adjust(cell, delta) {
         }
     }
     document.querySelectorAll(\`td[data-type="\${type}"]\`).forEach(updateCell);
+    updateBreakCells();
     calcAll();
 }
 
-document.querySelectorAll('td.val').forEach(cell => { const type = cell.dataset.type; const jud = cell.dataset.j; if (!type || !jud) return; cell.dataset.orig = d.notes[type][jud]; updateCell(cell); });
+// BREAK 셀 별도 업데이트
+function updateBreakCells() {
+    const perfCell = document.getElementById('breakPerf');
+    const greatCell = document.getElementById('breakGreat');
+    if (perfCell) perfCell.innerHTML = \`<span class="count">\${sol['75%Perfect']}</span>-<span class="count">\${sol['50%Perfect']}</span>\`;
+    if (greatCell) greatCell.innerHTML = \`<span class="count">\${sol['80%Great']}</span>-<span class="count">\${sol['60%Great']}</span>-<span class="count">\${sol['50%Great']}</span>\`;
+}
+
+// 초기화
+document.querySelectorAll('td.val').forEach(cell => {
+    const type = cell.dataset.type; const jud = cell.dataset.j;
+    if (!type || !jud) return;
+    if (type === 'breaks' && (jud === 'PERFECT' || jud === 'GREAT')) return;
+    updateCell(cell);
+});
+updateBreakCells();
 document.getElementById('resetBtn').onclick = () => {
     Object.assign(d.notes, JSON.parse(JSON.stringify(orig)));
-    document.querySelectorAll('td.val').forEach(updateCell);
+    document.querySelectorAll('td.val').forEach(cell => {
+        const type = cell.dataset.type; const jud = cell.dataset.j;
+        if (!type || !jud) return;
+        if (type === 'breaks' && (jud === 'PERFECT' || jud === 'GREAT')) return;
+        updateCell(cell);
+    });
+    updateBreakCells();
     calcAll();
 };
 calcAll();
@@ -329,9 +349,5 @@ calcAll();
     const url = URL.createObjectURL(blob);
     window.open(url, '_blank');
 
-    if (sol) {
-        alert(`분석 완료!\n새 탭에서 확인하세요\n\nBREAK PERFECT: ${sol['75%Perfect']}-${sol['50%Perfect']}\nBREAK GREAT: ${sol['80%Great']}-${sol['60%Great']}-${sol['50%Great']}`);
-    } else {
-        alert('분석 완료! 새 탭에서 확인하세요.');
-    }
+    alert(`분석 완료!\n새 탭에서 확인하세요\n\nBREAK PERFECT: ${sol['75%Perfect']}-${sol['50%Perfect']}\nBREAK GREAT: ${sol['80%Great']}-${sol['60%Great']}-${sol['50%Great']}`);
 })();
