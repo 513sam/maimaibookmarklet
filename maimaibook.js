@@ -1,23 +1,21 @@
-javascript:(function () {
-    /* ============================= 기존 코드 (절대 건드리지 않음) ============================= */
-    // [당신의 기존 코드 전체 복사 붙여넣기]
-    
-    // === 완전 수정된 새 탭 코드 (기존 코드 끝난 후 추가) ===
-    (() => {
-        const raw = localStorage.getItem('maimaiResultData');
-        if (!raw) {
-            alert('데이터가 없습니다. 먼저 결과를 계산해주세요.');
-            return;
-        }
-        const d = JSON.parse(raw);
-        const orig = JSON.parse(JSON.stringify(d.notes));
-        const sol = d.solutions;
+// === 기존 코드 끝난 후, 이 코드만 추가 ===
+(() => {
+    const raw = localStorage.getItem('maimaiResultData');
+    if (!raw) {
+        alert('데이터가 없습니다. 먼저 결과를 계산해주세요.');
+        return;
+    }
+    const data = JSON.parse(raw);
+    const sol = data.solutions;
 
-        const html = `<!DOCTYPE html>
+    // URL에 데이터 인코딩 (압축)
+    const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(data))));
+
+    const html = `<!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<title>🎵 Maimai DX 결과 분석기</title>
+<title>마이마이 결과 분석기</title>
 <style>
     *{box-sizing:border-box;}
     body{font-family:'Segoe UI',Arial,sans-serif;background:linear-gradient(135deg,#0a0a0a 0%,#1a1a2e 50%,#16213e 100%);color:#eee;margin:0;padding:20px;overflow-x:auto;}
@@ -102,10 +100,22 @@ javascript:(function () {
     </table>
     
     <div class="finalRate" id="finalRate">101.0000%</div>
-    <button class="resetBtn" id="resetBtn">🔄 원래대로 리셋</button>
+    <button class="resetBtn" id="resetBtn">원래대로 리셋</button>
 </div>
 
 <script>
+// URL에서 데이터 추출
+const params = new URLSearchParams(location.search);
+const encoded = params.get('data');
+if (!encoded) {
+    document.body.innerHTML = '<h1 style="color:#f66;text-align:center;">데이터 없음</h1>';
+    throw new Error('No data');
+}
+const json = decodeURIComponent(escape(atob(encoded)));
+const d = JSON.parse(json);
+const orig = JSON.parse(JSON.stringify(d.notes));
+const sol = d.solutions;
+
 const noteTypes = ['tap','hold','slide','touch','breaks'];
 const judgments = ['CRITICAL','PERFECT','GREAT','GOOD','MISS'];
 const weights = {tap:1, hold:2, slide:3, touch:1, breaks:5};
@@ -145,7 +155,7 @@ function getScore(note, w) {
 }
 function getLoss(note, w) {
     const max = getMaxScore(note, w);
-    return max === 0 ? '0.0000' : ((getMaxScore(note, w) - getScore(note, w)) / max * 100).toFixed(4);
+    return max === 0 ? '0.0000' : ((max - getScore(note, w)) / max * 100).toFixed(4);
 }
 function getBreakBonus() {
     const b = d.notes.breaks;
@@ -156,8 +166,7 @@ function getBreakBonus() {
     const g80 = sol ? sol['80%Great'] : 0;
     const g60 = sol ? sol['60%Great'] : 0;
     const g50 = sol ? sol['50%Great'] : 0;
-    const bonus = (b.CRITICAL * 1.0 + p75 * 0.75 + p50 * 0.5 + (g80 + g60 + g50) * 0.4 + b.GOOD * 0.3) / B;
-    return bonus;
+    return (b.CRITICAL * 1.0 + p75 * 0.75 + p50 * 0.5 + (g80 + g60 + g50) * 0.4 + b.GOOD * 0.3) / B;
 }
 
 function calcAll() {
@@ -172,7 +181,6 @@ function calcAll() {
     const bonusPct = getBreakBonus();
     const totalPct = notePct + bonusPct;
 
-    // 각 노트 ACHIEVEMENT
     noteTypes.forEach(t => {
         const loss = getLoss(d.notes[t], weights[t]);
         document.getElementById('ach_' + t).innerHTML = '<b>-' + loss + '%</b>';
@@ -180,12 +188,11 @@ function calcAll() {
     document.getElementById('ach_total').innerHTML = '<b>' + totalPct.toFixed(4) + '%</b>';
     document.getElementById('finalRate').textContent = totalPct.toFixed(4) + '%';
 
-    // TOTAL counts
     const totals = noteTypes.map(t => getTotal(d.notes[t]));
     document.getElementById('totalCounts').textContent = totals.join(' / ');
 }
 
-// 완전 수정된 조정 함수 (버그 모두 픽스)
+// 조정 함수
 function makeArrow(cell, delta) {
     const arrow = document.createElement('span');
     arrow.className = 'arrow';
@@ -207,14 +214,12 @@ function adjust(cell, delta) {
     const total = getTotal(note);
     if (target > total) return;
 
-    // 🔧 CRITICAL/PERFECT 조정 (버그 픽스)
     if (jud === 'CRITICAL' || jud === 'PERFECT') {
         note[jud] = target;
         const diff = Math.abs(delta);
-        
-        if (delta < 0) { // ↓ → GREAT ↑
+        if (delta < 0) {
             note.GREAT += diff;
-        } else { // ↑ → GREAT ↓
+        } else {
             if (note.GREAT >= diff) {
                 note.GREAT -= diff;
             } else {
@@ -225,15 +230,11 @@ function adjust(cell, delta) {
                 } else return;
             }
         }
-    } 
-    // 🔧 GREAT/GOOD/MISS 조정 (버그 픽스)
-    else {
+    } else {
         const cpTotal = note.CRITICAL + note.PERFECT;
-        if (delta > 0 && cpTotal < delta) return; // CP 부족
-        
+        if (delta > 0 && cpTotal < delta) return;
         note[jud] = target;
-        
-        if (delta > 0) { // ↑ → CRITICAL ↓
+        if (delta > 0) {
             let remain = delta;
             if (note.CRITICAL >= remain) {
                 note.CRITICAL -= remain;
@@ -244,17 +245,15 @@ function adjust(cell, delta) {
                     note.PERFECT -= remain;
                 } else return;
             }
-        } else { // ↓ → CRITICAL ↑
-            note.CRITICAL += diff;
+        } else {
+            note.CRITICAL += Math.abs(delta);
         }
     }
 
-    // 🔧 UI 완전 재생성 (화살표 무한생성 버그 픽스)
     cell.innerHTML = note[jud];
     cell.appendChild(makeArrow(cell, 1));
     cell.appendChild(makeArrow(cell, -1));
     
-    // 🔧 판정별 실점률 표시
     const loss = getLoss(d.notes[type], weights[type]);
     const lossSpan = document.createElement('div');
     lossSpan.className = 'loss';
@@ -275,7 +274,6 @@ document.querySelectorAll('td.val').forEach(td => {
     td.appendChild(makeArrow(td, 1));
     td.appendChild(makeArrow(td, -1));
     
-    // 초기 실점률 표시
     const loss = getLoss(d.notes[type], weights[type]);
     const lossSpan = document.createElement('div');
     lossSpan.className = 'loss';
@@ -283,33 +281,27 @@ document.querySelectorAll('td.val').forEach(td => {
     td.appendChild(lossSpan);
 });
 
-// 리셋 버튼
+// 리셋
 document.getElementById('resetBtn').onclick = () => {
     Object.assign(d.notes, JSON.parse(JSON.stringify(orig)));
-    
     document.querySelectorAll('td.val').forEach(td => {
         const type = td.dataset.type;
         const jud = td.dataset.j;
         if (!type || !jud) return;
-        
         const val = d.notes[type][jud];
         td.innerHTML = val;
         td.appendChild(makeArrow(td, 1));
         td.appendChild(makeArrow(td, -1));
-        
-        // 리셋 후 실점률
         const loss = getLoss(d.notes[type], weights[type]);
         const lossSpan = document.createElement('div');
         lossSpan.className = 'loss';
         lossSpan.textContent = '-' + loss + '%';
         td.appendChild(lossSpan);
     });
-    
     if (sol) {
         document.getElementById('breakPerf').textContent = sol['75%Perfect']+'-'+sol['50%Perfect'];
         document.getElementById('breakGreat').textContent = sol['80%Great']+'-'+sol['60%Great']+'-'+sol['50%Great'];
     }
-    
     calcAll();
 };
 
@@ -319,14 +311,15 @@ calcAll();
 </body>
 </html>`;
 
-        const blob = new Blob([html], { type: 'text/html' });
-        const url = URL.createObjectURL(blob);
-        window.open(url, '_blank');
+    // URL 생성 + 새 탭 열기
+    const blob = new Blob([html], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const finalUrl = url + '?data=' + encoded;
+    window.open(finalUrl, '_blank');
 
-        if (sol) {
-            alert(`✨ 분석 완료!\n새 탭에서 확인하세요\n\nBREAK PERFECT: ${sol['75%Perfect']}-${sol['50%Perfect']}\nBREAK GREAT: ${sol['80%Great']}-${sol['60%Great']}-${sol['50%Great']}`);
-        } else {
-            alert('✨ 분석 완료! 새 탭에서 확인하세요.');
-        }
-    })();
+    if (sol) {
+        alert(`분석 완료!\n새 탭에서 확인하세요\n\nBREAK PERFECT: ${sol['75%Perfect']}-${sol['50%Perfect']}\nBREAK GREAT: ${sol['80%Great']}-${sol['60%Great']}-${sol['50%Great']}`);
+    } else {
+        alert('분석 완료! 새 탭에서 확인하세요.');
+    }
 })();
