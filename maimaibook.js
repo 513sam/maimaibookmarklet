@@ -125,21 +125,21 @@ javascript:(function () {
     .master{background:linear-gradient(45deg,#9c27b0,#7b1fa2);color:#fff;}
     .reMaster{background:linear-gradient(45deg,#e1bee7,#ce93d8);color:#000;}
     table{border-collapse:collapse;width:100%;margin-top:25px;border:4px solid #ffeb3b;box-shadow:0 10px 30px rgba(255,235,59,0.3);}
-    th,td{border:2px solid #ffeb3b;padding:8px 4px;text-align:center;position:relative;font-weight:600;font-size:1rem;}
-    th{background:linear-gradient(45deg,#333,#555);color:#ffeb3b;font-size:1rem;}
+    th,td{border:2px solid #ffeb3b;padding:6px 2px;text-align:center;position:relative;font-weight:600;font-size:0.9rem;}
+    th{background:linear-gradient(45deg,#333,#555);color:#ffeb3b;font-size:0.9rem;}
     .crit{background:linear-gradient(45deg,#fff9c4,#fff176);color:#000;font-weight:900;}
     .perf{background:linear-gradient(45deg,#ffeb3b,#fdd835);color:#000;font-weight:900;}
     .great{background:linear-gradient(45deg,#f8bbd9,#f48fb1);color:#000;}
     .good{background:linear-gradient(45deg,#a5d6a7,#81c784);color:#000;}
     .miss{background:linear-gradient(45deg,#757575,#616161);color:#fff;}
     .total{background:linear-gradient(45deg,#424242,#212121);color:#ffeb3b;font-weight:900;}
-    .count{font-size:1.6rem;font-weight:900;line-height:1;display:block;}
-    .loss{font-size:0.7rem;display:block;margin-top:2px;font-weight:700;opacity:0.9;}
+    .count{font-size:1.5rem;font-weight:900;line-height:1;display:inline-block;margin:0 2px;}
+    .loss{font-size:0.65rem;display:block;margin-top:1px;font-weight:700;opacity:0.9;}
     .crit .loss,.perf .loss{color:transparent;}
     .great .loss{color:#c2185b;}
     .good .loss{color:#388e3c;}
     .miss .loss{color:#bbb;}
-    .arrow{cursor:pointer;font-size:0.8rem;margin:0 1px;color:#ff5722;transition:all 0.2s;opacity:0.8;}
+    .arrow{cursor:pointer;font-size:0.7rem;margin:0 1px;color:#ff5722;transition:all 0.2s;opacity:0.8;display:inline-block;}
     .arrow:hover{color:#ffeb3b;opacity:1;transform:scale(1.3);}
     .finalRate{font-size:3.5rem;font-weight:900;margin:30px 0;text-align:center;background:linear-gradient(45deg,#ffeb3b,#ff9800);background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-shadow:0 0 20px rgba(255,235,59,0.5);}
     .btns{display:flex;gap:10px;justify-content:center;margin-top:20px;}
@@ -226,10 +226,16 @@ function getScore(note, w) { return (note.CRITICAL + note.PERFECT) * w + note.GR
 function getJudgmentLoss(type, jud, count) {
     if (count === 0) return '0.0000';
     const w = weights[type];
+    const max = getMaxScore(d.notes[type], w);
     if (jud === 'CRITICAL' || jud === 'PERFECT') return '0.0000';
-    if (jud === 'GREAT') return ((1 - 0.8) * w * count / getMaxScore(d.notes[type], w) * 100).toFixed(4);
-    if (jud === 'GOOD') return ((1 - 0.5) * w * count / getMaxScore(d.notes[type], w) * 100).toFixed(4);
-    if (jud === 'MISS') return (w * count / getMaxScore(d.notes[type], w) * 100).toFixed(4);
+    if (jud === 'GREAT') return ((1 - 0.8) * w * count / max * 100).toFixed(4);
+    if (jud === 'GOOD') return ((1 - 0.5) * w * count / max * 100).toFixed(4);
+    if (jud === 'MISS') return (w * count / max * 100).toFixed(4);
+    if (jud.includes('75%')) return ((1 - 0.75) * w * count / max * 100).toFixed(4);
+    if (jud.includes('50%')) return ((1 - 0.5) * w * count / max * 100).toFixed(4);
+    if (jud.includes('80%')) return ((1 - 0.8) * w * count / max * 100).toFixed(4);
+    if (jud.includes('60%')) return ((1 - 0.6) * w * count / max * 100).toFixed(4);
+    if (jud.includes('50%')) return ((1 - 0.5) * w * count / max * 100).toFixed(4);
     return '0.0000';
 }
 
@@ -264,16 +270,28 @@ function updateCell(cell) {
     cell.innerHTML = '';
     if (sub) {
         const keys = sub.split(',');
-        keys.forEach((k, i) => {
+        keys.forEach(k => {
             const val = d.notes[type][k] || 0;
-            const span = document.createElement('div');
-            span.className = 'count';
-            span.textContent = val;
-            cell.appendChild(span);
-            if (i < keys.length - 1) cell.appendChild(document.createTextNode('-'));
+            const wrapper = document.createElement('div');
+            wrapper.style.display = 'inline-block';
+            wrapper.style.margin = '0 2px';
+            const countSpan = document.createElement('div');
+            countSpan.className = 'count';
+            countSpan.textContent = val;
+            wrapper.appendChild(countSpan);
+            const up = makeArrow(wrapper, type, k, 1);
+            const down = makeArrow(wrapper, type, k, -1);
+            wrapper.appendChild(up);
+            wrapper.appendChild(down);
+            const loss = getJudgmentLoss(type, k, val);
+            if (loss !== '0.0000') {
+                const lossSpan = document.createElement('div');
+                lossSpan.className = 'loss';
+                lossSpan.textContent = '-' + loss + '%';
+                wrapper.appendChild(lossSpan);
+            }
+            cell.appendChild(wrapper);
         });
-        cell.appendChild(makeArrow(cell, 1));
-        cell.appendChild(makeArrow(cell, -1));
     } else {
         const jud = cell.dataset.j;
         const val = d.notes[type][jud] || 0;
@@ -282,8 +300,8 @@ function updateCell(cell) {
         countSpan.textContent = val;
         cell.appendChild(countSpan);
         if (type !== 'breaks' || (jud !== 'PERFECT' && jud !== 'GREAT')) {
-            cell.appendChild(makeArrow(cell, 1));
-            cell.appendChild(makeArrow(cell, -1));
+            cell.appendChild(makeArrow(cell, type, jud, 1));
+            cell.appendChild(makeArrow(cell, type, jud, -1));
         }
         const loss = getJudgmentLoss(type, jud, val);
         if (loss !== '0.0000') {
@@ -295,74 +313,50 @@ function updateCell(cell) {
     }
 }
 
-function makeArrow(cell, delta) {
+function makeArrow(parent, type, key, delta) {
     const arrow = document.createElement('span');
     arrow.className = 'arrow';
     arrow.textContent = delta > 0 ? 'Up' : 'Down';
-    arrow.onclick = () => adjust(cell, delta);
+    arrow.onclick = () => adjust(type, key, delta);
     return arrow;
 }
 
-function adjust(cell, delta) {
-    const type = cell.dataset.type;
-    const sub = cell.dataset.sub;
-    if (sub) {
-        const keys = sub.split(',');
-        const total = keys.reduce((s,k) => s + (d.notes[type][k]||0), 0);
-        if (delta > 0 && total + delta > d.notes.breaks.PERFECT + d.notes.breaks.GREAT) return;
-        if (delta < 0 && total + delta < 0) return;
-        let remain = Math.abs(delta);
+function adjust(type, key, delta) {
+    const note = d.notes[type];
+    let cur = note[key] || 0;
+    let target = cur + delta;
+    if (target < 0) return;
+    if (key === 'CRITICAL' || key === 'PERFECT') {
+        if (target > getTotal(note)) return;
+        note[key] = target;
+        const diff = Math.abs(delta);
         if (delta > 0) {
-            for (let i = keys.length - 1; i >= 0 && remain > 0; i--) {
-                const k = keys[i];
-                const max = (i === 0 ? d.notes.breaks.PERFECT : d.notes.breaks.GREAT);
-                const cur = d.notes[type][k] || 0;
-                const add = Math.min(remain, max - cur);
-                d.notes[type][k] = cur + add;
-                remain -= add;
-            }
+            let remain = diff;
+            if (note.MISS >= remain) { note.MISS -= remain; remain = 0; }
+            else { remain -= note.MISS; note.MISS = 0; }
+            if (remain > 0 && note.GOOD >= remain) { note.GOOD -= remain; remain = 0; }
+            else if (remain > 0) { remain -= note.GOOD; note.GOOD = 0; }
+            if (remain > 0 && note.GREAT >= remain) { note.GREAT -= remain; }
+            else if (remain > 0) return;
         } else {
-            for (let i = 0; i < keys.length && remain > 0; i--) {
-                const k = keys[i];
-                const cur = d.notes[type][k] || 0;
-                const sub = Math.min(remain, cur);
-                d.notes[type][k] = cur - sub;
-                remain -= sub;
-            }
+            note.GREAT += diff;
         }
+    } else if (key === '75%Perfect' || key === '50%Perfect') {
+        if (target > note.PERFECT) return;
+        note[key] = target;
+    } else if (key === '80%Great' || key === '60%Great' || key === '50%Great') {
+        if (target > note.GREAT) return;
+        note[key] = target;
     } else {
-        const jud = cell.dataset.j;
-        const note = d.notes[type];
-        let cur = note[jud] || 0;
-        let target = cur + delta;
-        if (target < 0) return;
-        const total = getTotal(note);
-        if (target > total) return;
-        if (jud === 'CRITICAL' || jud === 'PERFECT') {
-            note[jud] = target;
-            const diff = Math.abs(delta);
-            if (delta > 0) {
-                let remain = diff;
-                if (note.MISS >= remain) { note.MISS -= remain; remain = 0; }
-                else { remain -= note.MISS; note.MISS = 0; }
-                if (remain > 0 && note.GOOD >= remain) { note.GOOD -= remain; remain = 0; }
-                else if (remain > 0) { remain -= note.GOOD; note.GOOD = 0; }
-                if (remain > 0 && note.GREAT >= remain) { note.GREAT -= remain; }
-                else if (remain > 0) return;
-            } else {
-                note.GREAT += diff;
-            }
+        const cpTotal = note.CRITICAL + note.PERFECT;
+        if (delta > 0 && cpTotal < delta) return;
+        note[key] = target;
+        if (delta > 0) {
+            let remain = delta;
+            if (note.CRITICAL >= remain) { note.CRITICAL -= remain; }
+            else { remain -= note.CRITICAL; note.CRITICAL = 0; if (note.PERFECT >= remain) { note.PERFECT -= remain; } else return; }
         } else {
-            const cpTotal = note.CRITICAL + note.PERFECT;
-            if (delta > 0 && cpTotal < delta) return;
-            note[jud] = target;
-            if (delta > 0) {
-                let remain = delta;
-                if (note.CRITICAL >= remain) { note.CRITICAL -= remain; }
-                else { remain -= note.CRITICAL; note.CRITICAL = 0; if (note.PERFECT >= remain) { note.PERFECT -= remain; } else return; }
-            } else {
-                note.CRITICAL += Math.abs(delta);
-            }
+            note.CRITICAL += Math.abs(delta);
         }
     }
     document.querySelectorAll(\`td[data-type="\${type}"]\`).forEach(updateCell);
