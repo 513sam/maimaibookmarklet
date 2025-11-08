@@ -133,6 +133,7 @@ javascript:(function () {
     .good{background:linear-gradient(45deg,#a5d6a7,#81c784);color:#000;}
     .miss{background:linear-gradient(45deg,#757575,#616161);color:#fff;}
     .total{background:linear-gradient(45deg,#424242,#212121);color:#ffeb3b;font-weight:900;}
+    .loss-total{font-size:1.2rem;font-weight:900;color:#ff5252;display:block;margin-top:4px;}
     .count{font-size:1.5rem;font-weight:900;line-height:1;display:inline-block;margin:0 2px;}
     .loss{font-size:0.65rem;display:block;margin-top:1px;font-weight:700;opacity:0.9;}
     .crit .loss,.perf .loss{color:transparent;}
@@ -171,19 +172,21 @@ javascript:(function () {
                 <th class="great">GREAT</th>
                 <th class="good">GOOD</th>
                 <th class="miss">MISS</th>
+                <th class="total">실점합계</th>
             </tr>
         </thead>
         <tbody>
-            <tr><td>TAP</td><td class="val crit" data-type="tap" data-j="CRITICAL"></td><td class="val perf" data-type="tap" data-j="PERFECT"></td><td class="val great" data-type="tap" data-j="GREAT"></td><td class="val good" data-type="tap" data-j="GOOD"></td><td class="val miss" data-type="tap" data-j="MISS"></td></tr>
-            <tr><td>HOLD</td><td class="val crit" data-type="hold" data-j="CRITICAL"></td><td class="val perf" data-type="hold" data-j="PERFECT"></td><td class="val great" data-type="hold" data-j="GREAT"></td><td class="val good" data-type="hold" data-j="GOOD"></td><td class="val miss" data-type="hold" data-j="MISS"></td></tr>
-            <tr><td>SLIDE</td><td class="val crit" data-type="slide" data-j="CRITICAL"></td><td class="val perf" data-type="slide" data-j="PERFECT"></td><td class="val great" data-type="slide" data-j="GREAT"></td><td class="val good" data-type="slide" data-j="GOOD"></td><td class="val miss" data-type="slide" data-j="MISS"></td></tr>
-            <tr><td>TOUCH</td><td class="val crit" data-type="touch" data-j="CRITICAL"></td><td class="val perf" data-type="touch" data-j="PERFECT"></td><td class="val great" data-type="touch" data-j="GREAT"></td><td class="val good" data-type="touch" data-j="GOOD"></td><td class="val miss" data-type="touch" data-j="MISS"></td></tr>
+            <tr><td>TAP</td><td class="val crit" data-type="tap" data-j="CRITICAL"></td><td class="val perf" data-type="tap" data-j="PERFECT"></td><td class="val great" data-type="tap" data-j="GREAT"></td><td class="val good" data-type="tap" data-j="GOOD"></td><td class="val miss" data-type="tap" data-j="MISS"></td><td class="val total" data-type="tap"></td></tr>
+            <tr><td>HOLD</td><td class="val crit" data-type="hold" data-j="CRITICAL"></td><td class="val perf" data-type="hold" data-j="PERFECT"></td><td class="val great" data-type="hold" data-j="GREAT"></td><td class="val good" data-type="hold" data-j="GOOD"></td><td class="val miss" data-type="hold" data-j="MISS"></td><td class="val total" data-type="hold"></td></tr>
+            <tr><td>SLIDE</td><td class="val crit" data-type="slide" data-j="CRITICAL"></td><td class="val perf" data-type="slide" data-j="PERFECT"></td><td class="val great" data-type="slide" data-j="GREAT"></td><td class="val good" data-type="slide" data-j="GOOD"></td><td class="val miss" data-type="slide" data-j="MISS"></td><td class="val total" data-type="slide"></td></tr>
+            <tr><td>TOUCH</td><td class="val crit" data-type="touch" data-j="CRITICAL"></td><td class="val perf" data-type="touch" data-j="PERFECT"></td><td class="val great" data-type="touch" data-j="GREAT"></td><td class="val good" data-type="touch" data-j="GOOD"></td><td class="val miss" data-type="touch" data-j="MISS"></td><td class="val total" data-type="touch"></td></tr>
             <tr><td>BREAK</td>
                 <td class="val crit" data-type="breaks" data-j="CRITICAL"></td>
                 <td class="val perf" id="breakPerf" data-type="breaks" data-sub="75%Perfect,50%Perfect"></td>
                 <td class="val great" id="breakGreat" data-type="breaks" data-sub="80%Great,60%Great,50%Great"></td>
                 <td class="val good" data-type="breaks" data-j="GOOD"></td>
                 <td class="val miss" data-type="breaks" data-j="MISS"></td>
+                <td class="val total" data-type="breaks"></td>
             </tr>
             <tr><td class="total"><b>TOTAL</b></td>
                 <td class="val total crit" id="total_cp"></td>
@@ -191,6 +194,7 @@ javascript:(function () {
                 <td class="val total great" id="total_g"></td>
                 <td class="val total good" id="total_go"></td>
                 <td class="val total miss" id="total_m"></td>
+                <td class="val total" id="total_loss"></td>
             </tr>
         </tbody>
     </table>
@@ -221,21 +225,30 @@ if (diffClass) lvl.className = 'diff-box ' + diffClass;
 
 function getTotal(note) { return Object.values(note).reduce((a,b)=>a+(typeof b==='number'?b:0),0); }
 function getMaxScore(note, w) { return getTotal(note) * w; }
-function getScore(note, w) { return (note.CRITICAL + note.PERFECT) * w + note.GREAT * w * 0.8 + note.GOOD * w * 0.5; }
+function getScore(note, w) {
+    let score = (note.CRITICAL || 0) * w + (note.PERFECT || 0) * w;
+    if (note['75%Perfect']) score += note['75%Perfect'] * w * 0.75;
+    if (note['50%Perfect']) score += note['50%Perfect'] * w * 0.5;
+    if (note['80%Great']) score += note['80%Great'] * w * 0.8;
+    if (note['60%Great']) score += note['60%Great'] * w * 0.6;
+    if (note['50%Great']) score += note['50%Great'] * w * 0.5;
+    score += (note.GREAT || 0) * w * 0.8 + (note.GOOD || 0) * w * 0.5;
+    return score;
+}
 
 function getJudgmentLoss(type, jud, count) {
     if (count === 0) return '0.0000';
     const w = weights[type];
     const max = getMaxScore(d.notes[type], w);
     if (jud === 'CRITICAL' || jud === 'PERFECT') return '0.0000';
+    if (jud === '75%Perfect') return ((1 - 0.75) * w * count / max * 100).toFixed(4);
+    if (jud === '50%Perfect') return ((1 - 0.5) * w * count / max * 100).toFixed(4);
+    if (jud === '80%Great') return ((1 - 0.8) * w * count / max * 100).toFixed(4);
+    if (jud === '60%Great') return ((1 - 0.6) * w * count / max * 100).toFixed(4);
+    if (jud === '50%Great') return ((1 - 0.5) * w * count / max * 100).toFixed(4);
     if (jud === 'GREAT') return ((1 - 0.8) * w * count / max * 100).toFixed(4);
     if (jud === 'GOOD') return ((1 - 0.5) * w * count / max * 100).toFixed(4);
     if (jud === 'MISS') return (w * count / max * 100).toFixed(4);
-    if (jud.includes('75%')) return ((1 - 0.75) * w * count / max * 100).toFixed(4);
-    if (jud.includes('50%')) return ((1 - 0.5) * w * count / max * 100).toFixed(4);
-    if (jud.includes('80%')) return ((1 - 0.8) * w * count / max * 100).toFixed(4);
-    if (jud.includes('60%')) return ((1 - 0.6) * w * count / max * 100).toFixed(4);
-    if (jud.includes('50%')) return ((1 - 0.5) * w * count / max * 100).toFixed(4);
     return '0.0000';
 }
 
@@ -245,12 +258,22 @@ function getBreakBonus() {
 }
 
 function calcAll() {
-    let W = 0, S = 0;
-    noteTypes.forEach(t => { const w = weights[t]; const n = d.notes[t]; W += getMaxScore(n, w); S += getScore(n, w); });
+    let W = 0, S = 0, totalLoss = 0;
+    noteTypes.forEach(t => {
+        const w = weights[t]; const n = d.notes[t];
+        const max = getMaxScore(n, w);
+        W += max;
+        S += getScore(n, w);
+        const loss = max - getScore(n, w);
+        totalLoss += (loss / max * 100);
+        const cell = document.querySelector(\`td.val.total[data-type="\${t}"]\`);
+        if (cell) cell.innerHTML = \`<span class="loss-total">-\${(loss / max * 100).toFixed(4)}%</span>\`;
+    });
     const notePct = W === 0 ? 0 : (S / W * 100);
     const bonusPct = getBreakBonus();
     const totalPct = notePct + bonusPct;
     document.getElementById('finalRate').textContent = totalPct.toFixed(4) + '%';
+    document.getElementById('total_loss').innerHTML = \`<span class="loss-total">-\${totalLoss.toFixed(4)}%</span>\`;
     const totals = { CRITICAL:0, PERFECT:0, GREAT:0, GOOD:0, MISS:0 };
     noteTypes.forEach(t => {
         const n = d.notes[t];
@@ -326,6 +349,7 @@ function adjust(type, key, delta) {
     let cur = note[key] || 0;
     let target = cur + delta;
     if (target < 0) return;
+
     if (key === 'CRITICAL' || key === 'PERFECT') {
         if (target > getTotal(note)) return;
         note[key] = target;
@@ -341,12 +365,18 @@ function adjust(type, key, delta) {
         } else {
             note.GREAT += diff;
         }
-    } else if (key === '75%Perfect' || key === '50%Perfect') {
+    } else if (['75%Perfect','50%Perfect'].includes(key)) {
         if (target > note.PERFECT) return;
         note[key] = target;
-    } else if (key === '80%Great' || key === '60%Great' || key === '50%Great') {
+    } else if (['80%Great','60%Great','50%Great'].includes(key)) {
         if (target > note.GREAT) return;
         note[key] = target;
+        if (delta < 0 && type === 'breaks') {
+            const cpTotal = note.CRITICAL + note.PERFECT;
+            if (cpTotal + Math.abs(delta) <= note.CRITICAL + note.PERFECT + note.GREAT) {
+                note.CRITICAL += Math.abs(delta);
+            }
+        }
     } else {
         const cpTotal = note.CRITICAL + note.PERFECT;
         if (delta > 0 && cpTotal < delta) return;
@@ -360,6 +390,7 @@ function adjust(type, key, delta) {
         }
     }
     document.querySelectorAll(\`td[data-type="\${type}"]\`).forEach(updateCell);
+    document.querySelectorAll(\`td.val.total[data-type="\${type}"]\`).forEach(c => c.innerHTML = '');
     calcAll();
 }
 
