@@ -14,7 +14,7 @@ javascript:(function () {
     const slidePerfect = parseInt(document.querySelector('body > div.wrapper.main_wrapper.t_c > div.gray_block.m_10.m_t_0.p_b_5.f_0 > div:nth-child(4) > table > tbody > tr:nth-child(4) > td:nth-child(3)')?.textContent.trim(), 10) || 0;
     const slideGreat = parseInt(document.querySelector('body > div.wrapper.main_wrapper.t_c > div.gray_block.m_10.m_t_0.p_b_5.f_0 > div:nth-child(4) > table > tbody > tr:nth-child(4) > td:nth-child(4)')?.textContent.trim(), 10) || 0;
     const slideGood = parseInt(document.querySelector('body > div.wrapper.main_wrapper.t_c > div.gray_block.m_10.m_t_0.p_b_5.f_0 > div:nth-child(4) > table > tbody > tr:nth-child(4) > td:nth-child(5)')?.textContent.trim(), 10) || 0;
-    const slideMiss = parseInt(document.querySelector('body > div.wrapper.main_wrapper.t_c > div.gray232_block.m_10.m_t_0.p_b_5.f_0 > div:nth-child(4) > table > tbody > tr:nth-child(4) > td:nth-child(6)')?.textContent.trim(), 10) || 0;
+    const slideMiss = parseInt(document.querySelector('body > div.wrapper.main_wrapper.t_c > div.gray_block.m_10.m_t_0.p_b_5.f_0 > div:nth-child(4) > table > tbody > tr:nth-child(4) > td:nth-child(6)')?.textContent.trim(), 10) || 0;
     const touchCrit = parseInt(document.querySelector('body > div.wrapper.main_wrapper.t_c > div.gray_block.m_10.m_t_0.p_b_5.f_0 > div:nth-child(4) > table > tbody > tr:nth-child(5) > td:nth-child(2)')?.textContent.trim(), 10) || 0;
     const touchPerfect = parseInt(document.querySelector('body > div.wrapper.main_wrapper.t_c > div.gray_block.m_10.m_t_0.p_b_5.f_0 > div:nth-child(4) > table > tbody > tr:nth-child(5) > td:nth-child(3)')?.textContent.trim(), 10) || 0;
     const touchGreat = parseInt(document.querySelector('body > div.wrapper.main_wrapper.t_c > div.gray_block.m_10.m_t_0.p_b_5.f_0 > div:nth-child(4) > table > tbody > tr:nth-child(5) > td:nth-child(4)')?.textContent.trim(), 10) || 0;
@@ -25,7 +25,6 @@ javascript:(function () {
     const breakGreat = parseInt(document.querySelector('body > div.wrapper.main_wrapper.t_c > div.gray_block.m_10.m_t_0.p_b_5.f_0 > div:nth-child(4) > table > tbody > tr:nth-child(6) > td:nth-child(4)')?.textContent.trim(), 10) || 0;
     const breakGood = parseInt(document.querySelector('body > div.wrapper.main_wrapper.t_c > div.gray_block.m_10.m_t_0.p_b_5.f_0 > div:nth-child(4) > table > tbody > tr:nth-child(6) > td:nth-child(5)')?.textContent.trim(), 10) || 0;
     const breakMiss = parseInt(document.querySelector('body > div.wrapper.main_wrapper.t_c > div.gray_block.m_10.m_t_0.p_b_5.f_0 > div:nth-child(4) > table > tbody > tr:nth-child(6) > td:nth-child(6)')?.textContent.trim(), 10) || 0;
-
     const songName = document.querySelector('body > div.wrapper.main_wrapper.t_c > div.p_10.t_l.f_0.v_b > div[class*="playlog_"][class*="_container"] > div.basic_block.m_5.m_t_17.m_r_60.p_5.p_l_10.f_13.break').lastChild.textContent.trim();
     const level = document.querySelector('body > div.wrapper.main_wrapper.t_c > div.p_10.t_l.f_0.v_b > div[class*="playlog_"][class*="_container"] > div.basic_block.m_5.m_t_17.m_r_60.p_5.p_l_10.f_13.break > div.w_80.f_r > div')?.textContent.trim() || null;
     const jacketImg = document.querySelector('body > div.wrapper.main_wrapper.t_c > div.p_10.t_l.f_0.v_b > div[class*="playlog_"][class*="_container"] > div.p_r.f_0 > img.music_img.m_5.m_b_17.m_r_0.f_l')?.src || null;
@@ -35,7 +34,6 @@ javascript:(function () {
     const musicKind = imgElement ? (imgElement === 'https://maimaidx-eng.com/maimai-mobile/img/music_standard.png' ? 'standard' : imgElement === 'https://maimaidx-eng.com/maimai-mobile/img/music_dx.png' ? 'delux' : null) : null;
     const diffImg = document.querySelector('img.playlog_diff.v_b')?.src || null;
     const difficulty = diffImg ? diffImg.match(/diff_([a-z]+)\.png$/i)?.[1] : null;
-
     const divElement = document.querySelector('div.playlog_achievement_txt.t_r');
     if (!divElement) { console.error("달성률 요소를 찾을 수 없습니다."); return; }
     const text = divElement.textContent.trim();
@@ -51,7 +49,6 @@ javascript:(function () {
                   (slide.CRITICAL + slide.PERFECT + slide.GREAT + slide.GOOD + slide.MISS) * weights.SLIDE +
                   (touch.CRITICAL + touch.PERFECT + touch.GREAT + touch.GOOD + touch.MISS) * weights.TOUCH +
                   (breakCounts.CRITICAL + breakCounts.PERFECT + breakCounts.GREAT + breakCounts.GOOD + breakCounts.MISS) * weights.BREAK;
-
         function noteScore(counts, weight) {
             return (counts.CRITICAL + counts.PERFECT) * weight * 1.0 + counts.GREAT * weight * 0.8 + counts.GOOD * weight * 0.5;
         }
@@ -84,7 +81,6 @@ javascript:(function () {
         }
         return solutions;
     }
-
     const tap = { CRITICAL: tapCrit, PERFECT: tapPerfect, GREAT: tapGreat, GOOD: tapGood, MISS: tapMiss };
     const hold = { CRITICAL: holdCrit, PERFECT: holdPerfect, GREAT: holdGreat, GOOD: holdGood, MISS: holdMiss };
     const slide = { CRITICAL: slideCrit, PERFECT: slidePerfect, GREAT: slideGreat, GOOD: slideGood, MISS: slideMiss };
@@ -100,7 +96,7 @@ javascript:(function () {
     };
     localStorage.setItem('maimaiResultData', JSON.stringify(data));
 
-    /* ============================= 4. 분석기 UI (새 탭) ============================= */
+    /* ============================= 4. 분석기 UI (새 탭) - 모바일 호환 ============================= */
     const html = `<!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -190,7 +186,6 @@ javascript:(function () {
     <div class="finalRate" id="finalRate">101.0000%</div>
     <button class="resetBtn" id="resetBtn">원래대로 리셋</button>
 </div>
-
 <script>
 const raw = localStorage.getItem('maimaiResultData');
 if (!raw) { document.body.innerHTML = '<h1 style="color:#f66;text-align:center;">데이터 없음</h1>'; throw new Error('No data'); }
@@ -199,8 +194,6 @@ const orig = JSON.parse(JSON.stringify(d.notes));
 const sol = d.solutions || { '75%Perfect':0, '50%Perfect':0, '80%Great':0, '60%Great':0, '50%Great':0 };
 const noteTypes = ['tap','hold','slide','touch','breaks'];
 const weights = {tap:1, hold:2, slide:3, touch:1, breaks:5};
-
-// 헤더 정보
 document.getElementById('jacket').src = d.jacketImg || '';
 document.getElementById('songName').textContent = d.songName || 'Unknown';
 document.getElementById('track').textContent = 'Track ' + (d.trackCount || '?');
@@ -211,12 +204,9 @@ lvl.textContent = 'Lv.' + (d.level || '??');
 const diffMap = {basic:'basic', advanced:'advanced', expert:'expert', master:'master', reMaster:'reMaster'};
 const diffClass = diffMap[d.difficulty] || '';
 if (diffClass) lvl.className = 'diff-box ' + diffClass;
-
 function getTotal(note) { return note.CRITICAL + note.PERFECT + note.GREAT + note.GOOD + note.MISS; }
 function getMaxScore(note, w) { return getTotal(note) * w; }
 function getScore(note, w) { return (note.CRITICAL + note.PERFECT) * w + note.GREAT * w * 0.8 + note.GOOD * w * 0.5; }
-
-// 판정별 실점 (노트 종류별)
 function getJudgmentLoss(type, jud, count) {
     if (count === 0) return '0.0000';
     const w = weights[type];
@@ -226,12 +216,10 @@ function getJudgmentLoss(type, jud, count) {
     if (jud === 'MISS') return (w * count / getMaxScore(d.notes[type], w) * 100).toFixed(4);
     return '0.0000';
 }
-
 function getBreakBonus() {
     const b = d.notes.breaks; const B = getTotal(b); if (B === 0) return 0;
     return (b.CRITICAL * 1.0 + sol['75%Perfect'] * 0.75 + sol['50%Perfect'] * 0.5 + (sol['80%Great'] + sol['60%Great'] + sol['50%Great']) * 0.4 + b.GOOD * 0.3) / B;
 }
-
 function calcAll() {
     let W = 0, S = 0;
     noteTypes.forEach(t => { const w = weights[t]; const n = d.notes[t]; W += getMaxScore(n, w); S += getScore(n, w); });
@@ -239,8 +227,6 @@ function calcAll() {
     const bonusPct = getBreakBonus();
     const totalPct = notePct + bonusPct;
     document.getElementById('finalRate').textContent = totalPct.toFixed(4) + '%';
-
-    // TOTAL 행
     const totals = { CRITICAL:0, PERFECT:0, GREAT:0, GOOD:0, MISS:0 };
     let totalLoss = 0;
     noteTypes.forEach(t => {
@@ -257,7 +243,6 @@ function calcAll() {
     document.getElementById('total_go').innerHTML = \`<span class="count">\${totals.GOOD}</span><span class="loss">-\${getJudgmentLoss('tap', 'GOOD', totals.GOOD)}%</span>\`;
     document.getElementById('total_m').innerHTML = \`<span class="count">\${totals.MISS}</span><span class="loss">-\${getJudgmentLoss('tap', 'MISS', totals.MISS)}%</span>\`;
 }
-
 function updateCell(cell) {
     const type = cell.dataset.type; const jud = cell.dataset.j; if (!type || !jud) return;
     const val = d.notes[type][jud];
@@ -271,17 +256,14 @@ function updateCell(cell) {
         const lossSpan = document.createElement('div'); lossSpan.className = 'loss'; lossSpan.textContent = '-' + loss + '%'; cell.appendChild(lossSpan);
     }
 }
-
 function makeArrow(cell, delta) {
     const arrow = document.createElement('span'); arrow.className = 'arrow'; arrow.textContent = delta > 0 ? 'Up' : 'Down';
     arrow.onclick = () => adjust(cell, delta); return arrow;
 }
-
 function adjust(cell, delta) {
     const type = cell.dataset.type; const jud = cell.dataset.j; if (!type || !jud) return;
     const note = d.notes[type]; let cur = note[jud] || 0; let target = cur + delta;
     if (target < 0) return; const total = getTotal(note); if (target > total) return;
-
     if (jud === 'CRITICAL' || jud === 'PERFECT') {
         note[jud] = target;
         const diff = Math.abs(delta);
@@ -312,16 +294,12 @@ function adjust(cell, delta) {
     updateBreakCells();
     calcAll();
 }
-
-// BREAK 셀 별도 업데이트
 function updateBreakCells() {
     const perfCell = document.getElementById('breakPerf');
     const greatCell = document.getElementById('breakGreat');
     if (perfCell) perfCell.innerHTML = \`<span class="count">\${sol['75%Perfect']}</span>-<span class="count">\${sol['50%Perfect']}</span>\`;
     if (greatCell) greatCell.innerHTML = \`<span class="count">\${sol['80%Great']}</span>-<span class="count">\${sol['60%Great']}</span>-<span class="count">\${sol['50%Great']}</span>\`;
 }
-
-// 초기화
 document.querySelectorAll('td.val').forEach(cell => {
     const type = cell.dataset.type; const jud = cell.dataset.j;
     if (!type || !jud) return;
@@ -347,7 +325,27 @@ calcAll();
 
     const blob = new Blob([html], { type: 'text/html' });
     const url = URL.createObjectURL(blob);
-    window.open(url, '_blank');
 
-    alert(`분석 완료!\n새 탭에서 확인하세요\n\nBREAK PERFECT: ${sol['75%Perfect']}-${sol['50%Perfect']}\nBREAK GREAT: ${sol['80%Great']}-${sol['60%Great']}-${sol['50%Great']}`);
+    const btn = document.createElement('button');
+    btn.textContent = '마이마이 분석기 열기';
+    btn.style.cssText = `
+        position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
+        z-index:99999;padding:18px 36px;font-size:20px;font-weight:bold;
+        background:#ffeb3b;color:#000;border:none;border-radius:16px;
+        box-shadow:0 10px 30px rgba(0,0,0,0.6);cursor:pointer;
+        transition:all 0.3s;outline:none;
+    `;
+    btn.onclick = () => {
+        window.open(url, '_blank', 'noopener,noreferrer');
+        document.body.removeChild(btn);
+        URL.revokeObjectURL(url);
+    };
+    document.body.appendChild(btn);
+
+    setTimeout(() => {
+        if (document.body.contains(btn)) {
+            document.body.removeChild(btn);
+            URL.revokeObjectURL(url);
+        }
+    }, 8000);
 })();
