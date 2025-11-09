@@ -88,22 +88,15 @@ javascript:(function () {
     const breaks = { CRITICAL: breakCrit, PERFECT: breakPerfect, GREAT: breakGreat, GOOD: breakGood, MISS: breakMiss };
     const results = calcAllSolutions(tap, hold, slide, touch, breaks, finalRate, "floor");
 
-    /* ============================= 3. 데이터 저장 (BREAK 병합) ============================= */
+    /* ============================= 3. 데이터 저장 ============================= */
     const data = {
         songName, level, jacketImg, trackCount, realTime, musicKind, difficulty, finalRate,
         notes: { tap, hold, slide, touch, breaks },
         solutions: results.length > 0 ? results[0] : null
     };
-    if (data.solutions) {
-        data.notes.breaks['75%Perfect'] = data.solutions['75%Perfect'];
-        data.notes.breaks['50%Perfect'] = data.solutions['50%Perfect'];
-        data.notes.breaks['80%Great'] = data.solutions['80%Great'];
-        data.notes.breaks['60%Great'] = data.solutions['60%Great'];
-        data.notes.breaks['50%Great'] = data.solutions['50%Great'];
-    }
     localStorage.setItem('maimaiResultData', JSON.stringify(data));
 
-    /* ============================= 4. 분석기 UI ============================= */
+    /* ============================= 4. 분석기 UI (새 탭) - 모바일 호환 ============================= */
     const html = `<!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -115,7 +108,7 @@ javascript:(function () {
     .container{max-width:1200px;margin:0 auto;padding:20px;background:rgba(30,30,40,0.95);border-radius:15px;box-shadow:0 20px 40px rgba(0,0,0,0.5);backdrop-filter:blur(10px);}
     .header{position:relative;text-align:center;margin-bottom:30px;}
     .header img{width:100%;max-height:280px;object-fit:cover;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,0.7);}
-    .header .title{position:absolute;bottom:15px;left:15px;right:15px;font-size:2.5rem;font-weight:900;color:#fff;-webkit-text-stroke:2px #000;text-shadow:0 0 8px #000;}
+    .header .title{position:absolute;bottom:15px;left:15px;right:15px;font-size:2.5rem;font-weight:900;color:#fff;-webkit-text-stroke:2px #000;text-stroke:2px #000;text-shadow:0 0 8px #000;}
     .header .info{position:absolute;top:15px;right:15px;text-align:right;font-size:1.1rem;background:rgba(0,0,0,0.8);padding:12px 15px;border-radius:10px;}
     .header .info div{margin:6px 0;}
     .diff-box{padding:8px 16px;border-radius:8px;display:inline-block;font-weight:900;font-size:1.2rem;text-shadow:1px 1px 2px #000;}
@@ -125,30 +118,25 @@ javascript:(function () {
     .master{background:linear-gradient(45deg,#9c27b0,#7b1fa2);color:#fff;}
     .reMaster{background:linear-gradient(45deg,#e1bee7,#ce93d8);color:#000;}
     table{border-collapse:collapse;width:100%;margin-top:25px;border:4px solid #ffeb3b;box-shadow:0 10px 30px rgba(255,235,59,0.3);}
-    th,td{border:2px solid #ffeb3b;padding:6px 2px;text-align:center;position:relative;font-weight:600;font-size:0.9rem;}
-    th{background:linear-gradient(45deg,#333,#555);color:#ffeb3b;font-size:0.9rem;}
+    th,td{border:2px solid #ffeb3b;padding:8px 4px;text-align:center;position:relative;font-weight:600;font-size:1rem;}
+    th{background:linear-gradient(45deg,#333,#555);color:#ffeb3b;font-size:1rem;}
     .crit{background:linear-gradient(45deg,#fff9c4,#fff176);color:#000;font-weight:900;}
     .perf{background:linear-gradient(45deg,#ffeb3b,#fdd835);color:#000;font-weight:900;}
     .great{background:linear-gradient(45deg,#f8bbd9,#f48fb1);color:#000;}
     .good{background:linear-gradient(45deg,#a5d6a7,#81c784);color:#000;}
     .miss{background:linear-gradient(45deg,#757575,#616161);color:#fff;}
     .total{background:linear-gradient(45deg,#424242,#212121);color:#ffeb3b;font-weight:900;}
-    .loss-total{font-size:1.2rem;font-weight:900;color:#ff5252;display:block;margin-top:4px;}
-    .count{font-size:1.5rem;font-weight:900;line-height:1;display:inline-block;margin:0 2px;}
-    .loss{font-size:0.65rem;display:block;margin-top:1px;font-weight:700;opacity:0.9;}
+    .count{font-size:1.6rem;font-weight:900;line-height:1;display:block;}
+    .loss{font-size:0.7rem;display:block;margin-top:2px;font-weight:700;opacity:0.9;}
     .crit .loss,.perf .loss{color:transparent;}
     .great .loss{color:#c2185b;}
     .good .loss{color:#388e3c;}
     .miss .loss{color:#bbb;}
-    .arrow{cursor:pointer;font-size:0.7rem;margin:0 1px;color:#ff5722;transition:all 0.2s;opacity:0.8;display:inline-block;}
+    .arrow{cursor:pointer;font-size:0.8rem;margin:0 1px;color:#ff5722;transition:all 0.2s;opacity:0.8;}
     .arrow:hover{color:#ffeb3b;opacity:1;transform:scale(1.3);}
     .finalRate{font-size:3.5rem;font-weight:900;margin:30px 0;text-align:center;background:linear-gradient(45deg,#ffeb3b,#ff9800);background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-shadow:0 0 20px rgba(255,235,59,0.5);}
-    .btns{display:flex;gap:10px;justify-content:center;margin-top:20px;}
-    .resetBtn,.saveBtn{padding:12px 30px;border:none;border-radius:25px;cursor:pointer;font-weight:900;font-size:1.2rem;transition:all 0.3s;box-shadow:0 5px 15px rgba(0,0,0,0.4);}
-    .resetBtn{background:linear-gradient(45deg,#f44336,#d32f2f);color:#fff;}
-    .resetBtn:hover{background:linear-gradient(45deg,#ff5722,#e64a19);transform:translateY(-2px);}
-    .saveBtn{background:linear-gradient(45deg,#2196f3,#1976d2);color:#fff;}
-    .saveBtn:hover{background:linear-gradient(45deg,#42a5f5,#1e88e5);transform:translateY(-2px);}
+    .resetBtn{display:block;margin:20px auto 0;padding:12px 30px;background:linear-gradient(45deg,#f44336,#d32f2f);color:#fff;border:none;border-radius:25px;cursor:pointer;font-weight:900;font-size:1.2rem;transition:all 0.3s;box-shadow:0 5px 15px rgba(244,67,54,0.4);}
+    .resetBtn:hover{background:linear-gradient(45deg,#ff5722,#e64a19);transform:translateY(-2px);box-shadow:0 8px 25px rgba(244,67,54,0.6);}
 </style>
 </head>
 <body>
@@ -172,21 +160,19 @@ javascript:(function () {
                 <th class="great">GREAT</th>
                 <th class="good">GOOD</th>
                 <th class="miss">MISS</th>
-                <th class="total">실점합계</th>
             </tr>
         </thead>
         <tbody>
-            <tr><td>TAP</td><td class="val crit" data-type="tap" data-j="CRITICAL"></td><td class="val perf" data-type="tap" data-j="PERFECT"></td><td class="val great" data-type="tap" data-j="GREAT"></td><td class="val good" data-type="tap" data-j="GOOD"></td><td class="val miss" data-type="tap" data-j="MISS"></td><td class="val total" data-type="tap"></td></tr>
-            <tr><td>HOLD</td><td class="val crit" data-type="hold" data-j="CRITICAL"></td><td class="val perf" data-type="hold" data-j="PERFECT"></td><td class="val great" data-type="hold" data-j="GREAT"></td><td class="val good" data-type="hold" data-j="GOOD"></td><td class="val miss" data-type="hold" data-j="MISS"></td><td class="val total" data-type="hold"></td></tr>
-            <tr><td>SLIDE</td><td class="val crit" data-type="slide" data-j="CRITICAL"></td><td class="val perf" data-type="slide" data-j="PERFECT"></td><td class="val great" data-type="slide" data-j="GREAT"></td><td class="val good" data-type="slide" data-j="GOOD"></td><td class="val miss" data-type="slide" data-j="MISS"></td><td class="val total" data-type="slide"></td></tr>
-            <tr><td>TOUCH</td><td class="val crit" data-type="touch" data-j="CRITICAL"></td><td class="val perf" data-type="touch" data-j="PERFECT"></td><td class="val great" data-type="touch" data-j="GREAT"></td><td class="val good" data-type="touch" data-j="GOOD"></td><td class="val miss" data-type="touch" data-j="MISS"></td><td class="val total" data-type="touch"></td></tr>
+            <tr><td>TAP</td><td class="val crit" data-type="tap" data-j="CRITICAL"></td><td class="val perf" data-type="tap" data-j="PERFECT"></td><td class="val great" data-type="tap" data-j="GREAT"></td><td class="val good" data-type="tap" data-j="GOOD"></td><td class="val miss" data-type="tap" data-j="MISS"></td></tr>
+            <tr><td>HOLD</td><td class="val crit" data-type="hold" data-j="CRITICAL"></td><td class="val perf" data-type="hold" data-j="PERFECT"></td><td class="val great" data-type="hold" data-j="GREAT"></td><td class="val good" data-type="hold" data-j="GOOD"></td><td class="val miss" data-type="hold" data-j="MISS"></td></tr>
+            <tr><td>SLIDE</td><td class="val crit" data-type="slide" data-j="CRITICAL"></td><td class="val perf" data-type="slide" data-j="PERFECT"></td><td class="val great" data-type="slide" data-j="GREAT"></td><td class="val good" data-type="slide" data-j="GOOD"></td><td class="val miss" data-type="slide" data-j="MISS"></td></tr>
+            <tr><td>TOUCH</td><td class="val crit" data-type="touch" data-j="CRITICAL"></td><td class="val perf" data-type="touch" data-j="PERFECT"></td><td class="val great" data-type="touch" data-j="GREAT"></td><td class="val good" data-type="touch" data-j="GOOD"></td><td class="val miss" data-type="touch" data-j="MISS"></td></tr>
             <tr><td>BREAK</td>
                 <td class="val crit" data-type="breaks" data-j="CRITICAL"></td>
-                <td class="val perf" id="breakPerf" data-type="breaks" data-sub="75%Perfect,50%Perfect"></td>
-                <td class="val great" id="breakGreat" data-type="breaks" data-sub="80%Great,60%Great,50%Great"></td>
+                <td class="val perf" id="breakPerf"></td>
+                <td class="val great" id="breakGreat"></td>
                 <td class="val good" data-type="breaks" data-j="GOOD"></td>
                 <td class="val miss" data-type="breaks" data-j="MISS"></td>
-                <td class="val total" data-type="breaks"></td>
             </tr>
             <tr><td class="total"><b>TOTAL</b></td>
                 <td class="val total crit" id="total_cp"></td>
@@ -194,24 +180,20 @@ javascript:(function () {
                 <td class="val total great" id="total_g"></td>
                 <td class="val total good" id="total_go"></td>
                 <td class="val total miss" id="total_m"></td>
-                <td class="val total" id="total_loss"></td>
             </tr>
         </tbody>
     </table>
     <div class="finalRate" id="finalRate">101.0000%</div>
-    <div class="btns">
-        <button class="resetBtn" id="resetBtn">원래대로 리셋</button>
-        <button class="saveBtn" id="saveBtn">이미지로 저장</button>
-    </div>
+    <button class="resetBtn" id="resetBtn">원래대로 리셋</button>
 </div>
 <script>
 const raw = localStorage.getItem('maimaiResultData');
 if (!raw) { document.body.innerHTML = '<h1 style="color:#f66;text-align:center;">데이터 없음</h1>'; throw new Error('No data'); }
 const d = JSON.parse(raw);
 const orig = JSON.parse(JSON.stringify(d.notes));
+const sol = d.solutions || { '75%Perfect':0, '50%Perfect':0, '80%Great':0, '60%Great':0, '50%Great':0 };
 const noteTypes = ['tap','hold','slide','touch','breaks'];
 const weights = {tap:1, hold:2, slide:3, touch:1, breaks:5};
-
 document.getElementById('jacket').src = d.jacketImg || '';
 document.getElementById('songName').textContent = d.songName || 'Unknown';
 document.getElementById('track').textContent = 'Track ' + (d.trackCount || '?');
@@ -222,63 +204,38 @@ lvl.textContent = 'Lv.' + (d.level || '??');
 const diffMap = {basic:'basic', advanced:'advanced', expert:'expert', master:'master', reMaster:'reMaster'};
 const diffClass = diffMap[d.difficulty] || '';
 if (diffClass) lvl.className = 'diff-box ' + diffClass;
-
-function getTotal(note) { return Object.values(note).reduce((a,b)=>a+(typeof b==='number'?b:0),0); }
+function getTotal(note) { return note.CRITICAL + note.PERFECT + note.GREAT + note.GOOD + note.MISS; }
 function getMaxScore(note, w) { return getTotal(note) * w; }
-function getScore(note, w) {
-    let score = (note.CRITICAL || 0) * w + (note.PERFECT || 0) * w;
-    if (note['75%Perfect']) score += note['75%Perfect'] * w * 0.75;
-    if (note['50%Perfect']) score += note['50%Perfect'] * w * 0.5;
-    if (note['80%Great']) score += note['80%Great'] * w * 0.8;
-    if (note['60%Great']) score += note['60%Great'] * w * 0.6;
-    if (note['50%Great']) score += note['50%Great'] * w * 0.5;
-    score += (note.GREAT || 0) * w * 0.8 + (note.GOOD || 0) * w * 0.5;
-    return score;
-}
-
+function getScore(note, w) { return (note.CRITICAL + note.PERFECT) * w + note.GREAT * w * 0.8 + note.GOOD * w * 0.5; }
 function getJudgmentLoss(type, jud, count) {
     if (count === 0) return '0.0000';
     const w = weights[type];
-    const max = getMaxScore(d.notes[type], w);
     if (jud === 'CRITICAL' || jud === 'PERFECT') return '0.0000';
-    if (jud === '75%Perfect') return ((1 - 0.75) * w * count / max * 100).toFixed(4);
-    if (jud === '50%Perfect') return ((1 - 0.5) * w * count / max * 100).toFixed(4);
-    if (jud === '80%Great') return ((1 - 0.8) * w * count / max * 100).toFixed(4);
-    if (jud === '60%Great') return ((1 - 0.6) * w * count / max * 100).toFixed(4);
-    if (jud === '50%Great') return ((1 - 0.5) * w * count / max * 100).toFixed(4);
-    if (jud === 'GREAT') return ((1 - 0.8) * w * count / max * 100).toFixed(4);
-    if (jud === 'GOOD') return ((1 - 0.5) * w * count / max * 100).toFixed(4);
-    if (jud === 'MISS') return (w * count / max * 100).toFixed(4);
+    if (jud === 'GREAT') return ((1 - 0.8) * w * count / getMaxScore(d.notes[type], w) * 100).toFixed(4);
+    if (jud === 'GOOD') return ((1 - 0.5) * w * count / getMaxScore(d.notes[type], w) * 100).toFixed(4);
+    if (jud === 'MISS') return (w * count / getMaxScore(d.notes[type], w) * 100).toFixed(4);
     return '0.0000';
 }
-
 function getBreakBonus() {
     const b = d.notes.breaks; const B = getTotal(b); if (B === 0) return 0;
-    return (b.CRITICAL * 1.0 + (b['75%Perfect']||0) * 0.75 + (b['50%Perfect']||0) * 0.5 + ((b['80%Great']||0) + (b['60%Great']||0) + (b['50%Great']||0)) * 0.4 + b.GOOD * 0.3) / B;
+    return (b.CRITICAL * 1.0 + sol['75%Perfect'] * 0.75 + sol['50%Perfect'] * 0.5 + (sol['80%Great'] + sol['60%Great'] + sol['50%Great']) * 0.4 + b.GOOD * 0.3) / B;
 }
-
 function calcAll() {
-    let W = 0, S = 0, totalLoss = 0;
-    noteTypes.forEach(t => {
-        const w = weights[t]; const n = d.notes[t];
-        const max = getMaxScore(n, w);
-        W += max;
-        S += getScore(n, w);
-        const loss = max - getScore(n, w);
-        totalLoss += (loss / max * 100);
-        const cell = document.querySelector(\`td.val.total[data-type="\${t}"]\`);
-        if (cell) cell.innerHTML = \`<span class="loss-total">-\${(loss / max * 100).toFixed(4)}%</span>\`;
-    });
+    let W = 0, S = 0;
+    noteTypes.forEach(t => { const w = weights[t]; const n = d.notes[t]; W += getMaxScore(n, w); S += getScore(n, w); });
     const notePct = W === 0 ? 0 : (S / W * 100);
     const bonusPct = getBreakBonus();
     const totalPct = notePct + bonusPct;
     document.getElementById('finalRate').textContent = totalPct.toFixed(4) + '%';
-    document.getElementById('total_loss').innerHTML = \`<span class="loss-total">-\${totalLoss.toFixed(4)}%</span>\`;
     const totals = { CRITICAL:0, PERFECT:0, GREAT:0, GOOD:0, MISS:0 };
+    let totalLoss = 0;
     noteTypes.forEach(t => {
         const n = d.notes[t];
         ['CRITICAL','PERFECT','GREAT','GOOD','MISS'].forEach(j => {
-            totals[j] += n[j] || 0;
+            totals[j] += n[j];
+            if (j !== 'CRITICAL' && j !== 'PERFECT') {
+                totalLoss += parseFloat(getJudgmentLoss(t, j, n[j]));
+            }
         });
     });
     document.getElementById('total_cp').innerHTML = \`<span class="count">\${totals.CRITICAL + totals.PERFECT}</span>\`;
@@ -286,73 +243,29 @@ function calcAll() {
     document.getElementById('total_go').innerHTML = \`<span class="count">\${totals.GOOD}</span><span class="loss">-\${getJudgmentLoss('tap', 'GOOD', totals.GOOD)}%</span>\`;
     document.getElementById('total_m').innerHTML = \`<span class="count">\${totals.MISS}</span><span class="loss">-\${getJudgmentLoss('tap', 'MISS', totals.MISS)}%</span>\`;
 }
-
 function updateCell(cell) {
-    const type = cell.dataset.type;
-    const sub = cell.dataset.sub;
+    const type = cell.dataset.type; const jud = cell.dataset.j; if (!type || !jud) return;
+    const val = d.notes[type][jud];
     cell.innerHTML = '';
-    if (sub) {
-        const keys = sub.split(',');
-        keys.forEach(k => {
-            const val = d.notes[type][k] || 0;
-            const wrapper = document.createElement('div');
-            wrapper.style.display = 'inline-block';
-            wrapper.style.margin = '0 2px';
-            const countSpan = document.createElement('div');
-            countSpan.className = 'count';
-            countSpan.textContent = val;
-            wrapper.appendChild(countSpan);
-            const up = makeArrow(wrapper, type, k, 1);
-            const down = makeArrow(wrapper, type, k, -1);
-            wrapper.appendChild(up);
-            wrapper.appendChild(down);
-            const loss = getJudgmentLoss(type, k, val);
-            if (loss !== '0.0000') {
-                const lossSpan = document.createElement('div');
-                lossSpan.className = 'loss';
-                lossSpan.textContent = '-' + loss + '%';
-                wrapper.appendChild(lossSpan);
-            }
-            cell.appendChild(wrapper);
-        });
-    } else {
-        const jud = cell.dataset.j;
-        const val = d.notes[type][jud] || 0;
-        const countSpan = document.createElement('div');
-        countSpan.className = 'count';
-        countSpan.textContent = val;
-        cell.appendChild(countSpan);
-        if (type !== 'breaks' || (jud !== 'PERFECT' && jud !== 'GREAT')) {
-            cell.appendChild(makeArrow(cell, type, jud, 1));
-            cell.appendChild(makeArrow(cell, type, jud, -1));
-        }
-        const loss = getJudgmentLoss(type, jud, val);
-        if (loss !== '0.0000') {
-            const lossSpan = document.createElement('div');
-            lossSpan.className = 'loss';
-            lossSpan.textContent = '-' + loss + '%';
-            cell.appendChild(lossSpan);
-        }
+    const countSpan = document.createElement('div'); countSpan.className = 'count'; countSpan.textContent = val; cell.appendChild(countSpan);
+    if (type !== 'breaks' || (jud !== 'PERFECT' && jud !== 'GREAT')) {
+        cell.appendChild(makeArrow(cell, 1)); cell.appendChild(makeArrow(cell, -1));
+    }
+    const loss = getJudgmentLoss(type, jud, val);
+    if (loss !== '0.0000') {
+        const lossSpan = document.createElement('div'); lossSpan.className = 'loss'; lossSpan.textContent = '-' + loss + '%'; cell.appendChild(lossSpan);
     }
 }
-
-function makeArrow(parent, type, key, delta) {
-    const arrow = document.createElement('span');
-    arrow.className = 'arrow';
-    arrow.textContent = delta > 0 ? 'Up' : 'Down';
-    arrow.onclick = () => adjust(type, key, delta);
-    return arrow;
+function makeArrow(cell, delta) {
+    const arrow = document.createElement('span'); arrow.className = 'arrow'; arrow.textContent = delta > 0 ? 'Up' : 'Down';
+    arrow.onclick = () => adjust(cell, delta); return arrow;
 }
-
-function adjust(type, key, delta) {
-    const note = d.notes[type];
-    let cur = note[key] || 0;
-    let target = cur + delta;
-    if (target < 0) return;
-
-    if (key === 'CRITICAL' || key === 'PERFECT') {
-        if (target > getTotal(note)) return;
-        note[key] = target;
+function adjust(cell, delta) {
+    const type = cell.dataset.type; const jud = cell.dataset.j; if (!type || !jud) return;
+    const note = d.notes[type]; let cur = note[jud] || 0; let target = cur + delta;
+    if (target < 0) return; const total = getTotal(note); if (target > total) return;
+    if (jud === 'CRITICAL' || jud === 'PERFECT') {
+        note[jud] = target;
         const diff = Math.abs(delta);
         if (delta > 0) {
             let remain = diff;
@@ -365,22 +278,10 @@ function adjust(type, key, delta) {
         } else {
             note.GREAT += diff;
         }
-    } else if (['75%Perfect','50%Perfect'].includes(key)) {
-        if (target > note.PERFECT) return;
-        note[key] = target;
-    } else if (['80%Great','60%Great','50%Great'].includes(key)) {
-        if (target > note.GREAT) return;
-        note[key] = target;
-        if (delta < 0 && type === 'breaks') {
-            const cpTotal = note.CRITICAL + note.PERFECT;
-            if (cpTotal + Math.abs(delta) <= note.CRITICAL + note.PERFECT + note.GREAT) {
-                note.CRITICAL += Math.abs(delta);
-            }
-        }
     } else {
         const cpTotal = note.CRITICAL + note.PERFECT;
         if (delta > 0 && cpTotal < delta) return;
-        note[key] = target;
+        note[jud] = target;
         if (delta > 0) {
             let remain = delta;
             if (note.CRITICAL >= remain) { note.CRITICAL -= remain; }
@@ -390,29 +291,35 @@ function adjust(type, key, delta) {
         }
     }
     document.querySelectorAll(\`td[data-type="\${type}"]\`).forEach(updateCell);
-    document.querySelectorAll(\`td.val.total[data-type="\${type}"]\`).forEach(c => c.innerHTML = '');
+    updateBreakCells();
     calcAll();
 }
-
-document.querySelectorAll('td.val').forEach(updateCell);
+function updateBreakCells() {
+    const perfCell = document.getElementById('breakPerf');
+    const greatCell = document.getElementById('breakGreat');
+    if (perfCell) perfCell.innerHTML = \`<span class="count">\${sol['75%Perfect']}</span>-<span class="count">\${sol['50%Perfect']}</span>\`;
+    if (greatCell) greatCell.innerHTML = \`<span class="count">\${sol['80%Great']}</span>-<span class="count">\${sol['60%Great']}</span>-<span class="count">\${sol['50%Great']}</span>\`;
+}
+document.querySelectorAll('td.val').forEach(cell => {
+    const type = cell.dataset.type; const jud = cell.dataset.j;
+    if (!type || !jud) return;
+    if (type === 'breaks' && (jud === 'PERFECT' || jud === 'GREAT')) return;
+    updateCell(cell);
+});
+updateBreakCells();
 document.getElementById('resetBtn').onclick = () => {
     Object.assign(d.notes, JSON.parse(JSON.stringify(orig)));
-    document.querySelectorAll('td.val').forEach(updateCell);
+    document.querySelectorAll('td.val').forEach(cell => {
+        const type = cell.dataset.type; const jud = cell.dataset.j;
+        if (!type || !jud) return;
+        if (type === 'breaks' && (jud === 'PERFECT' || jud === 'GREAT')) return;
+        updateCell(cell);
+    });
+    updateBreakCells();
     calcAll();
 };
-
-document.getElementById('saveBtn').onclick = () => {
-    html2canvas(document.querySelector('.container')).then(canvas => {
-        const link = document.createElement('a');
-        link.download = \`\${d.songName || 'maimai'}\${d.level ? '_Lv' + d.level : ''}_\${d.finalRate.toFixed(4)}%.png\`;
-        link.href = canvas.toDataURL();
-        link.click();
-    });
-};
-
 calcAll();
 </script>
-<script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 </body>
 </html>`;
 
@@ -421,7 +328,13 @@ calcAll();
 
     const btn = document.createElement('button');
     btn.textContent = '마이마이 분석기 열기';
-    btn.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:99999;padding:18px 36px;font-size:20px;font-weight:bold;background:#ffeb3b;color:#000;border:none;border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,0.6);cursor:pointer;transition:all 0.3s;outline:none;';
+    btn.style.cssText = `
+        position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
+        z-index:99999;padding:18px 36px;font-size:20px;font-weight:bold;
+        background:#ffeb3b;color:#000;border:none;border-radius:16px;
+        box-shadow:0 10px 30px rgba(0,0,0,0.6);cursor:pointer;
+        transition:all 0.3s;outline:none;
+    `;
     btn.onclick = () => {
         window.open(url, '_blank', 'noopener,noreferrer');
         document.body.removeChild(btn);
