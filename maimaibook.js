@@ -39,7 +39,7 @@ javascript:(function () {
     const match = text.match(/(\d+).(\d+)%/);
     if (!match) { console.error("달성률 파싱 실패:", text); return; }
     const finalRate = parseFloat(`${match[1]}.${match[2]}`);
-    function calcAllSolutions(tap, hold, slide, touch, breakCounts, finalRate, roundMode = "floor") {
+    function calcAllSolutions(tap, hold, slide, touch, breakCounts, finalRate) {
         const weights = { TAP: 1, HOLD: 2, SLIDE: 3, TOUCH: 1, BREAK: 5 };
         const W = (tap.CRITICAL + tap.PERFECT + tap.GREAT + tap.GOOD + tap.MISS) * weights.TAP +
                   (hold.CRITICAL + hold.PERFECT + hold.GREAT + hold.GOOD + hold.MISS) * weights.HOLD +
@@ -47,7 +47,7 @@ javascript:(function () {
                   (touch.CRITICAL + touch.PERFECT + touch.GREAT + touch.GOOD + touch.MISS) * weights.TOUCH +
                   (breakCounts.CRITICAL + breakCounts.PERFECT + breakCounts.GREAT + breakCounts.GOOD + breakCounts.MISS) * weights.BREAK;
         function noteScore(counts, weight) {
-            return (counts.CRITICAL + counts.PERFECT) * weight * 1.0 + counts.GREAT * weight * 0.8 + counts.GOOD * weight * (weight === 5 ? 0.4 : 0.5);
+            return Math.floor((counts.CRITICAL + counts.PERFECT) * weight * 10000 + counts.GREAT * weight * 8000 + counts.GOOD * weight * (weight === 5 ? 4000 : 5000)) / 10000;
         }
         let baseScore = noteScore(tap, weights.TAP) + noteScore(hold, weights.HOLD) + noteScore(slide, weights.SLIDE) + noteScore(touch, weights.TOUCH);
         const C = breakCounts.CRITICAL, P = breakCounts.PERFECT, G = breakCounts.GREAT, D = breakCounts.GOOD, M = breakCounts.MISS;
@@ -58,19 +58,18 @@ javascript:(function () {
             for (let g80 = 0; g80 <= G; g80++) {
                 for (let g60 = 0; g60 <= G - g80; g60++) {
                     const g50 = G - g80 - g60;
-                    const Sg = 0.8 * g80 + 0.6 * g60 + 0.5 * g50;
-                    const breakScore = (C + P) * 5 + 0.4 * D * 5 + 5 * Sg;
+                    const Sg = Math.floor((8000 * g80 + 6000 * g60 + 5000 * g50) / 10000);
+                    const breakScore = Math.floor((C + P) * 5 * 10000 + D * 2 * 10000 + Sg * 5 * 10000) / 10000;
                     const noteScoreTotal = baseScore + breakScore;
-                    const notePercent = (100 * noteScoreTotal) / W;
-                    const bonus = (C + 0.75 * x + 0.5 * y + 0.4 * G + 0.3 * D) / B;
-                    const bonusPercent = bonus * 1.0;
+                    const notePercent = Math.floor(noteScoreTotal / W * 100 * 10000) / 10000;
+                    const bonus = Math.floor((C * 10000 + x * 7500 + y * 5000 + G * 4000 + D * 3000) / 10000) / B;
+                    const bonusPercent = Math.floor(bonus * 10000) / 10000;
                     const total = notePercent + bonusPercent;
-                    let shown = roundMode === "round" ? Math.round(total * 10000) / 10000 : Math.floor(total * 10000) / 10000;
+                    const shown = Math.floor(total * 10000) / 10000;
                     if (shown.toFixed(4) === finalRate.toFixed(4)) {
                         solutions.push({
                             "75%Perfect": x, "50%Perfect": y, "80%Great": g80, "60%Great": g60, "50%Great": g50,
-                            notePercent: parseFloat(notePercent.toFixed(4)), bonusPercent: parseFloat(bonusPercent.toFixed(4)),
-                            total: parseFloat(total.toFixed(4))
+                            notePercent: notePercent, bonusPercent: bonusPercent, total: total
                         });
                     }
                 }
@@ -83,7 +82,7 @@ javascript:(function () {
     const slide = { CRITICAL: slideCrit, PERFECT: slidePerfect, GREAT: slideGreat, GOOD: slideGood, MISS: slideMiss };
     const touch = { CRITICAL: touchCrit, PERFECT: touchPerfect, GREAT: touchGreat, GOOD: touchGood, MISS: touchMiss };
     const breaks = { CRITICAL: breakCrit, PERFECT: breakPerfect, GREAT: breakGreat, GOOD: breakGood, MISS: breakMiss };
-    const results = calcAllSolutions(tap, hold, slide, touch, breaks, finalRate, "floor");
+    const results = calcAllSolutions(tap, hold, slide, touch, breaks, finalRate);
     const data = {
         songName, level, jacketImg, trackCount, realTime, musicKind, difficulty, finalRate,
         notes: { tap, hold, slide, touch, breaks },
@@ -202,46 +201,50 @@ const diffClass = diffMap[d.difficulty] || '';
 if (diffClass) lvl.className = 'diff-box ' + diffClass;
 function getTotal(note) { return note.CRITICAL + note.PERFECT + note.GREAT + note.GOOD + note.MISS; }
 function getMaxScore(note, w) { return getTotal(note) * w; }
-function getScore(note, w) { return (note.CRITICAL + note.PERFECT) * w + note.GREAT * w * 0.8 + note.GOOD * w * (w === 5 ? 0.4 : 0.5); }
+function getScore(type) {
+    const n = d.notes[type]; const w = weights[type];
+    const cp = n.CRITICAL + n.PERFECT;
+    const g = n.GREAT * 0.8;
+    const go = n.GOOD * (type === 'breaks' ? 0.4 : 0.5);
+    return Math.floor((cp + g + go) * w * 10000) / 10000;
+}
 function getJudgmentLoss(type, jud, count) {
     if (count === 0) return '0.0000';
     const w = weights[type];
-    const maxScore = getMaxScore(d.notes[type], w);
+    const max = getMaxScore(d.notes[type], w);
     if (jud === 'CRITICAL' || jud === 'PERFECT') return '0.0000';
-    if (jud === 'GREAT') return ((1 - 0.8) * w * count / maxScore * 100).toFixed(4);
-    if (jud === 'GOOD') return ((1 - (w === 5 ? 0.4 : 0.5)) * w * count / maxScore * 100).toFixed(4);
-    if (jud === 'MISS') return (w * count / maxScore * 100).toFixed(4);
+    if (jud === 'GREAT') return Math.floor((0.2 * w * count / max) * 100 * 10000) / 10000 + '';
+    if (jud === 'GOOD') return Math.floor(((type === 'breaks' ? 0.6 : 0.5) * w * count / max) * 100 * 10000) / 10000 + '';
+    if (jud === 'MISS') return Math.floor((w * count / max) * 100 * 10000) / 10000 + '';
     return '0.0000';
 }
 function getTypeTotalLoss(type) {
-    const n = d.notes[type]; const w = weights[type];
-    const max = getMaxScore(n, w);
-    const actual = getScore(n, w);
-    return max === 0 ? '0.0000' : ((max - actual) / max * 100).toFixed(4);
+    const max = getMaxScore(d.notes[type], weights[type]);
+    const actual = getScore(type);
+    return max === 0 ? '0.0000' : Math.floor((max - actual) / max * 100 * 10000) / 10000 + '';
 }
 function getBreakBonus() {
     const b = d.notes.breaks; const B = getTotal(b); if (B === 0) return 0;
-    return (b.CRITICAL * 1.0 + sol['75%Perfect'] * 0.75 + sol['50%Perfect'] * 0.5 + (sol['80%Great'] + sol['60%Great'] + sol['50%Great']) * 0.4 + b.GOOD * 0.3) / B;
+    const bonus = (b.CRITICAL * 1.0 + sol['75%Perfect'] * 0.75 + sol['50%Perfect'] * 0.5 + (sol['80%Great'] + sol['60%Great'] + sol['50%Great']) * 0.4 + b.GOOD * 0.3) / B;
+    return Math.floor(bonus * 10000) / 10000;
 }
 function calcAll() {
     let W = 0, S = 0;
-    noteTypes.forEach(t => { const w = weights[t]; const n = d.notes[t]; W += getMaxScore(n, w); S += getScore(n, w); });
-    const notePct = W === 0 ? 0 : (S / W * 100);
+    noteTypes.forEach(t => { const w = weights[t]; const n = d.notes[t]; W += getMaxScore(n, w); S += getScore(t) * w; });
+    const notePct = Math.floor(S / W * 100 * 10000) / 10000;
     const bonusPct = getBreakBonus();
     const totalPct = notePct + bonusPct;
-    document.getElementById('finalRate').textContent = totalPct.toFixed(4) + '%';
+    document.getElementById('finalRate').textContent = Math.floor(totalPct * 10000) / 10000 + '%';
     const totals = { CRITICAL:0, PERFECT:0, GREAT:0, GOOD:0, MISS:0 };
     let grandLoss = 0;
     noteTypes.forEach(t => {
         const n = d.notes[t];
-        ['CRITICAL','PERFECT','GREAT','GOOD','MISS'].forEach(j => {
-            totals[j] += n[j];
-        });
+        ['CRITICAL','PERFECT','GREAT','GOOD','MISS'].forEach(j => totals[j] += n[j]);
         const loss = parseFloat(getTypeTotalLoss(t));
         document.getElementById(t + '_total').innerHTML = \`<span class="loss">-\${loss}%</span>\`;
         grandLoss += loss;
     });
-    document.getElementById('grand_total').innerHTML = \`<span class="loss">-\${grandLoss.toFixed(4)}%</span>\`;
+    document.getElementById('grand_total').innerHTML = \`<span class="loss">-\${Math.floor(grandLoss * 10000) / 10000}%</span>\`;
     document.getElementById('total_cp').innerHTML = \`<span class="count">\${totals.CRITICAL + totals.PERFECT}</span>\`;
     document.getElementById('total_g').innerHTML = \`<span class="count">\${totals.GREAT}</span>\`;
     document.getElementById('total_go').innerHTML = \`<span class="count">\${totals.GOOD}</span>\`;
