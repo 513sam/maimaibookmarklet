@@ -1,5 +1,4 @@
 javascript:(function () {
-    /* ============================= 1. 노트 판정 추출 ============================= */
     const tapCrit = parseInt(document.querySelector('body > div.wrapper.main_wrapper.t_c > div.gray_block.m_10.m_t_0.p_b_5.f_0 > div:nth-child(4) > table > tbody > tr:nth-child(2) > td:nth-child(2)')?.textContent.trim(), 10) || 0;
     const tapPerfect = parseInt(document.querySelector('body > div.wrapper.main_wrapper.t_c > div.gray_block.m_10.m_t_0.p_b_5.f_0 > div:nth-child(4) > table > tbody > tr:nth-child(2) > td:nth-child(3)')?.textContent.trim(), 10) || 0;
     const tapGreat = parseInt(document.querySelector('body > div.wrapper.main_wrapper.t_c > div.gray_block.m_10.m_t_0.p_b_5.f_0 > div:nth-child(4) > table > tbody > tr:nth-child(2) > td:nth-child(4)')?.textContent.trim(), 10) || 0;
@@ -40,8 +39,6 @@ javascript:(function () {
     const match = text.match(/(\d+).(\d+)%/);
     if (!match) { console.error("달성률 파싱 실패:", text); return; }
     const finalRate = parseFloat(`${match[1]}.${match[2]}`);
-
-    /* ============================= 2. BREAK 해답 계산 ============================= */
     function calcAllSolutions(tap, hold, slide, touch, breakCounts, finalRate, roundMode = "floor") {
         const weights = { TAP: 1, HOLD: 2, SLIDE: 3, TOUCH: 1, BREAK: 5 };
         const W = (tap.CRITICAL + tap.PERFECT + tap.GREAT + tap.GOOD + tap.MISS) * weights.TAP +
@@ -50,7 +47,7 @@ javascript:(function () {
                   (touch.CRITICAL + touch.PERFECT + touch.GREAT + touch.GOOD + touch.MISS) * weights.TOUCH +
                   (breakCounts.CRITICAL + breakCounts.PERFECT + breakCounts.GREAT + breakCounts.GOOD + breakCounts.MISS) * weights.BREAK;
         function noteScore(counts, weight) {
-            return (counts.CRITICAL + counts.PERFECT) * weight * 1.0 + counts.GREAT * weight * 0.8 + counts.GOOD * weight * 0.5;
+            return (counts.CRITICAL + counts.PERFECT) * weight * 1.0 + counts.GREAT * weight * 0.8 + counts.GOOD * weight * (weight === 5 ? 0.4 : 0.5);
         }
         let baseScore = noteScore(tap, weights.TAP) + noteScore(hold, weights.HOLD) + noteScore(slide, weights.SLIDE) + noteScore(touch, weights.TOUCH);
         const C = breakCounts.CRITICAL, P = breakCounts.PERFECT, G = breakCounts.GREAT, D = breakCounts.GOOD, M = breakCounts.MISS;
@@ -65,7 +62,7 @@ javascript:(function () {
                     const breakScore = (C + P) * 5 + 0.4 * D * 5 + 5 * Sg;
                     const noteScoreTotal = baseScore + breakScore;
                     const notePercent = (100 * noteScoreTotal) / W;
-                    const bonus = (C + 0.5 * P + 0.25 * x + 0.4 * G + 0.3 * D) / B;
+                    const bonus = (C + 0.75 * x + 0.5 * y + 0.4 * G + 0.3 * D) / B;
                     const bonusPercent = bonus * 1.0;
                     const total = notePercent + bonusPercent;
                     let shown = roundMode === "round" ? Math.round(total * 10000) / 10000 : Math.floor(total * 10000) / 10000;
@@ -87,16 +84,12 @@ javascript:(function () {
     const touch = { CRITICAL: touchCrit, PERFECT: touchPerfect, GREAT: touchGreat, GOOD: touchGood, MISS: touchMiss };
     const breaks = { CRITICAL: breakCrit, PERFECT: breakPerfect, GREAT: breakGreat, GOOD: breakGood, MISS: breakMiss };
     const results = calcAllSolutions(tap, hold, slide, touch, breaks, finalRate, "floor");
-
-    /* ============================= 3. 데이터 저장 ============================= */
     const data = {
         songName, level, jacketImg, trackCount, realTime, musicKind, difficulty, finalRate,
         notes: { tap, hold, slide, touch, breaks },
         solutions: results.length > 0 ? results[0] : null
     };
     localStorage.setItem('maimaiResultData', JSON.stringify(data));
-
-    /* ============================= 4. 분석기 UI (새 탭) - 모바일 호환 ============================= */
     const html = `<!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -160,19 +153,21 @@ javascript:(function () {
                 <th class="great">GREAT</th>
                 <th class="good">GOOD</th>
                 <th class="miss">MISS</th>
+                <th class="total">TOTAL LOSS</th>
             </tr>
         </thead>
         <tbody>
-            <tr><td>TAP</td><td class="val crit" data-type="tap" data-j="CRITICAL"></td><td class="val perf" data-type="tap" data-j="PERFECT"></td><td class="val great" data-type="tap" data-j="GREAT"></td><td class="val good" data-type="tap" data-j="GOOD"></td><td class="val miss" data-type="tap" data-j="MISS"></td></tr>
-            <tr><td>HOLD</td><td class="val crit" data-type="hold" data-j="CRITICAL"></td><td class="val perf" data-type="hold" data-j="PERFECT"></td><td class="val great" data-type="hold" data-j="GREAT"></td><td class="val good" data-type="hold" data-j="GOOD"></td><td class="val miss" data-type="hold" data-j="MISS"></td></tr>
-            <tr><td>SLIDE</td><td class="val crit" data-type="slide" data-j="CRITICAL"></td><td class="val perf" data-type="slide" data-j="PERFECT"></td><td class="val great" data-type="slide" data-j="GREAT"></td><td class="val good" data-type="slide" data-j="GOOD"></td><td class="val miss" data-type="slide" data-j="MISS"></td></tr>
-            <tr><td>TOUCH</td><td class="val crit" data-type="touch" data-j="CRITICAL"></td><td class="val perf" data-type="touch" data-j="PERFECT"></td><td class="val great" data-type="touch" data-j="GREAT"></td><td class="val good" data-type="touch" data-j="GOOD"></td><td class="val miss" data-type="touch" data-j="MISS"></td></tr>
+            <tr><td>TAP</td><td class="val crit" data-type="tap" data-j="CRITICAL"></td><td class="val perf" data-type="tap" data-j="PERFECT"></td><td class="val great" data-type="tap" data-j="GREAT"></td><td class="val good" data-type="tap" data-j="GOOD"></td><td class="val miss" data-type="tap" data-j="MISS"></td><td class="val total" id="tap_total"></td></tr>
+            <tr><td>HOLD</td><td class="val crit" data-type="hold" data-j="CRITICAL"></td><td class="val perf" data-type="hold" data-j="PERFECT"></td><td class="val great" data-type="hold" data-j="GREAT"></td><td class="val good" data-type="hold" data-j="GOOD"></td><td class="val miss" data-type="hold" data-j="MISS"></td><td class="val total" id="hold_total"></td></tr>
+            <tr><td>SLIDE</td><td class="val crit" data-type="slide" data-j="CRITICAL"></td><td class="val perf" data-type="slide" data-j="PERFECT"></td><td class="val great" data-type="slide" data-j="GREAT"></td><td class="val good" data-type="slide" data-j="GOOD"></td><td class="val miss" data-type="slide" data-j="MISS"></td><td class="val total" id="slide_total"></td></tr>
+            <tr><td>TOUCH</td><td class="val crit" data-type="touch" data-j="CRITICAL"></td><td class="val perf" data-type="touch" data-j="PERFECT"></td><td class="val great" data-type="touch" data-j="GREAT"></td><td class="val good" data-type="touch" data-j="GOOD"></td><td class="val miss" data-type="touch" data-j="MISS"></td><td class="val total" id="touch_total"></td></tr>
             <tr><td>BREAK</td>
                 <td class="val crit" data-type="breaks" data-j="CRITICAL"></td>
                 <td class="val perf" id="breakPerf"></td>
                 <td class="val great" id="breakGreat"></td>
                 <td class="val good" data-type="breaks" data-j="GOOD"></td>
                 <td class="val miss" data-type="breaks" data-j="MISS"></td>
+                <td class="val total" id="break_total"></td>
             </tr>
             <tr><td class="total"><b>TOTAL</b></td>
                 <td class="val total crit" id="total_cp"></td>
@@ -180,6 +175,7 @@ javascript:(function () {
                 <td class="val total great" id="total_g"></td>
                 <td class="val total good" id="total_go"></td>
                 <td class="val total miss" id="total_m"></td>
+                <td class="val total" id="grand_total"></td>
             </tr>
         </tbody>
     </table>
@@ -206,15 +202,22 @@ const diffClass = diffMap[d.difficulty] || '';
 if (diffClass) lvl.className = 'diff-box ' + diffClass;
 function getTotal(note) { return note.CRITICAL + note.PERFECT + note.GREAT + note.GOOD + note.MISS; }
 function getMaxScore(note, w) { return getTotal(note) * w; }
-function getScore(note, w) { return (note.CRITICAL + note.PERFECT) * w + note.GREAT * w * 0.8 + note.GOOD * w * 0.5; }
+function getScore(note, w) { return (note.CRITICAL + note.PERFECT) * w + note.GREAT * w * 0.8 + note.GOOD * w * (w === 5 ? 0.4 : 0.5); }
 function getJudgmentLoss(type, jud, count) {
     if (count === 0) return '0.0000';
     const w = weights[type];
+    const maxScore = getMaxScore(d.notes[type], w);
     if (jud === 'CRITICAL' || jud === 'PERFECT') return '0.0000';
-    if (jud === 'GREAT') return ((1 - 0.8) * w * count / getMaxScore(d.notes[type], w) * 100).toFixed(4);
-    if (jud === 'GOOD') return ((1 - 0.5) * w * count / getMaxScore(d.notes[type], w) * 100).toFixed(4);
-    if (jud === 'MISS') return (w * count / getMaxScore(d.notes[type], w) * 100).toFixed(4);
+    if (jud === 'GREAT') return ((1 - 0.8) * w * count / maxScore * 100).toFixed(4);
+    if (jud === 'GOOD') return ((1 - (w === 5 ? 0.4 : 0.5)) * w * count / maxScore * 100).toFixed(4);
+    if (jud === 'MISS') return (w * count / maxScore * 100).toFixed(4);
     return '0.0000';
+}
+function getTypeTotalLoss(type) {
+    const n = d.notes[type]; const w = weights[type];
+    const max = getMaxScore(n, w);
+    const actual = getScore(n, w);
+    return max === 0 ? '0.0000' : ((max - actual) / max * 100).toFixed(4);
 }
 function getBreakBonus() {
     const b = d.notes.breaks; const B = getTotal(b); if (B === 0) return 0;
@@ -228,20 +231,21 @@ function calcAll() {
     const totalPct = notePct + bonusPct;
     document.getElementById('finalRate').textContent = totalPct.toFixed(4) + '%';
     const totals = { CRITICAL:0, PERFECT:0, GREAT:0, GOOD:0, MISS:0 };
-    let totalLoss = 0;
+    let grandLoss = 0;
     noteTypes.forEach(t => {
         const n = d.notes[t];
         ['CRITICAL','PERFECT','GREAT','GOOD','MISS'].forEach(j => {
             totals[j] += n[j];
-            if (j !== 'CRITICAL' && j !== 'PERFECT') {
-                totalLoss += parseFloat(getJudgmentLoss(t, j, n[j]));
-            }
         });
+        const loss = parseFloat(getTypeTotalLoss(t));
+        document.getElementById(t + '_total').innerHTML = \`<span class="loss">-\${loss}%</span>\`;
+        grandLoss += loss;
     });
+    document.getElementById('grand_total').innerHTML = \`<span class="loss">-\${grandLoss.toFixed(4)}%</span>\`;
     document.getElementById('total_cp').innerHTML = \`<span class="count">\${totals.CRITICAL + totals.PERFECT}</span>\`;
-    document.getElementById('total_g').innerHTML = \`<span class="count">\${totals.GREAT}</span><span class="loss">-\${getJudgmentLoss('tap', 'GREAT', totals.GREAT)}%</span>\`;
-    document.getElementById('total_go').innerHTML = \`<span class="count">\${totals.GOOD}</span><span class="loss">-\${getJudgmentLoss('tap', 'GOOD', totals.GOOD)}%</span>\`;
-    document.getElementById('total_m').innerHTML = \`<span class="count">\${totals.MISS}</span><span class="loss">-\${getJudgmentLoss('tap', 'MISS', totals.MISS)}%</span>\`;
+    document.getElementById('total_g').innerHTML = \`<span class="count">\${totals.GREAT}</span>\`;
+    document.getElementById('total_go').innerHTML = \`<span class="count">\${totals.GOOD}</span>\`;
+    document.getElementById('total_m').innerHTML = \`<span class="count">\${totals.MISS}</span>\`;
 }
 function updateCell(cell) {
     const type = cell.dataset.type; const jud = cell.dataset.j; if (!type || !jud) return;
@@ -322,10 +326,8 @@ calcAll();
 </script>
 </body>
 </html>`;
-
     const blob = new Blob([html], { type: 'text/html' });
     const url = URL.createObjectURL(blob);
-
     const btn = document.createElement('button');
     btn.textContent = '마이마이 분석기 열기';
     btn.style.cssText = `
@@ -341,7 +343,6 @@ calcAll();
         URL.revokeObjectURL(url);
     };
     document.body.appendChild(btn);
-
     setTimeout(() => {
         if (document.body.contains(btn)) {
             document.body.removeChild(btn);
