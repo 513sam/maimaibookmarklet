@@ -156,7 +156,7 @@ javascript:(function () {
             </tr>
         </thead>
         <tbody>
-            <tr><td>TAP</td><td class="val crit" data-type="tap" data-j="CRITICAL"></td><td class="val perf" data-type="tap" data-j="PERFECT"></td><td class="val great" data-type="tap" data-j="GREAT"></td><td class="val good" data-type="tap" data-j="GOOD"></td><td class="val miss" data-type="tap" data-j="MISS"></td><td class="val total" id="tap_total"></td></tr>
+            <tr><td>TAP</td><td class="val crit" data-type="tap" data-j="CRITICAL"></td><td class="val perf" data-type="tap" data-j="PERFECT"></td><td class="val great" data-type="tap" data-j="GREAT"></td><td class="val good" data-type="tap" data-j="GOOD"></td><td class="val miss" data-type="tap" data-j="MISS"></td><td class="val total" id="-tap_total"></td></tr>
             <tr><td>HOLD</td><td class="val crit" data-type="hold" data-j="CRITICAL"></td><td class="val perf" data-type="hold" data-j="PERFECT"></td><td class="val great" data-type="hold" data-j="GREAT"></td><td class="val good" data-type="hold" data-j="GOOD"></td><td class="val miss" data-type="hold" data-j="MISS"></td><td class="val total" id="hold_total"></td></tr>
             <tr><td>SLIDE</td><td class="val crit" data-type="slide" data-j="CRITICAL"></td><td class="val perf" data-type="slide" data-j="PERFECT"></td><td class="val great" data-type="slide" data-j="GREAT"></td><td class="val good" data-type="slide" data-j="GOOD"></td><td class="val miss" data-type="slide" data-j="MISS"></td><td class="val total" id="slide_total"></td></tr>
             <tr><td>TOUCH</td><td class="val crit" data-type="touch" data-j="CRITICAL"></td><td class="val perf" data-type="touch" data-j="PERFECT"></td><td class="val great" data-type="touch" data-j="GREAT"></td><td class="val good" data-type="touch" data-j="GOOD"></td><td class="val miss" data-type="touch" data-j="MISS"></td><td class="val total" id="touch_total"></td></tr>
@@ -213,7 +213,7 @@ function getJudgmentLoss(type, jud, count) {
     const w = weights[type];
     const max = getMaxScore(d.notes[type], w);
     if (jud === 'CRITICAL' || jud === 'PERFECT') return '0.0000';
-    if (jud === 'GREAT') return Math.floor((0.2 * w * count / max) * 100 * 10000) / 10000 + '';
+    if (jud === 'GRE') return Math.floor((0.2 * w * count / max) * 100 * 10000) / 10000 + '';
     if (jud === 'GOOD') return Math.floor(((type === 'breaks' ? 0.6 : 0.5) * w * count / max) * 100 * 10000) / 10000 + '';
     if (jud === 'MISS') return Math.floor((w * count / max) * 100 * 10000) / 10000 + '';
     return '0.0000';
@@ -230,7 +230,7 @@ function getBreakBonus() {
 }
 function calcAll() {
     let W = 0, S = 0;
-    noteTypes.forEach(t => { const w = weights[t]; const n = d.notes[t]; W += getMaxScore(n, w); S += getScore(t) * w; });
+    noteTypes.forEach(t => { const w = weights[t]; const n = d.notes[t]; W += getMaxScore(n, w); S += getScore(t); });
     const notePct = Math.floor(S / W * 100 * 10000) / 10000;
     const bonusPct = getBreakBonus();
     const totalPct = notePct + bonusPct;
