@@ -47,7 +47,7 @@ javascript:(function () {
                   (touch.CRITICAL + touch.PERFECT + touch.GREAT + touch.GOOD + touch.MISS) * weights.TOUCH +
                   (breakCounts.CRITICAL + breakCounts.PERFECT + breakCounts.GREAT + breakCounts.GOOD + breakCounts.MISS) * weights.BREAK;
         function noteScore(counts, weight) {
-            return Math.floor((counts.CRITICAL + counts.PERFECT) * weight * 10000 + counts.GREAT * weight * 8000 + counts.GOOD * weight * (weight === 5 ? 4000 : 5000)) / 10000;
+            return (counts.CRITICAL + counts.PERFECT) * weight + counts.GREAT * weight * 0.8 + counts.GOOD * weight * (weight === 5 ? 0.4 : 0.5);
         }
         let baseScore = noteScore(tap, weights.TAP) + noteScore(hold, weights.HOLD) + noteScore(slide, weights.SLIDE) + noteScore(touch, weights.TOUCH);
         const C = breakCounts.CRITICAL, P = breakCounts.PERFECT, G = breakCounts.GREAT, D = breakCounts.GOOD, M = breakCounts.MISS;
@@ -58,18 +58,19 @@ javascript:(function () {
             for (let g80 = 0; g80 <= G; g80++) {
                 for (let g60 = 0; g60 <= G - g80; g60++) {
                     const g50 = G - g80 - g60;
-                    const Sg = Math.floor((8000 * g80 + 6000 * g60 + 5000 * g50) / 10000);
-                    const breakScore = Math.floor((C + P) * 5 * 10000 + D * 2 * 10000 + Sg * 5 * 10000) / 10000;
+                    const Sg = 0.8 * g80 + 0.6 * g60 + 0.5 * g50;
+                    const breakScore = (C + P) * 5 + 0.4 * D * 5 + 5 * Sg;
                     const noteScoreTotal = baseScore + breakScore;
-                    const notePercent = Math.floor(noteScoreTotal / W * 100 * 10000) / 10000;
-                    const bonus = Math.floor((C * 10000 + x * 7500 + y * 5000 + G * 4000 + D * 3000) / 10000) / B;
-                    const bonusPercent = Math.floor(bonus * 10000) / 10000;
+                    const notePercent = (100 * noteScoreTotal) / W;
+                    const bonus = (C + 0.75 * x + 0.5 * y + 0.4 * G + 0.3 * D) / B;
+                    const bonusPercent = bonus * 1.0;
                     const total = notePercent + bonusPercent;
-                    const shown = Math.floor(total * 10000) / 10000;
+                    let shown = Math.floor(total * 10000) / 10000;
                     if (shown.toFixed(4) === finalRate.toFixed(4)) {
                         solutions.push({
                             "75%Perfect": x, "50%Perfect": y, "80%Great": g80, "60%Great": g60, "50%Great": g50,
-                            notePercent: notePercent, bonusPercent: bonusPercent, total: total
+                            notePercent: parseFloat(notePercent.toFixed(4)), bonusPercent: parseFloat(bonusPercent.toFixed(4)),
+                            total: parseFloat(total.toFixed(4))
                         });
                     }
                 }
@@ -156,7 +157,7 @@ javascript:(function () {
             </tr>
         </thead>
         <tbody>
-            <tr><td>TAP</td><td class="val crit" data-type="tap" data-j="CRITICAL"></td><td class="val perf" data-type="tap" data-j="PERFECT"></td><td class="val great" data-type="tap" data-j="GREAT"></td><td class="val good" data-type="tap" data-j="GOOD"></td><td class="val miss" data-type="tap" data-j="MISS"></td><td class="val total" id="-tap_total"></td></tr>
+            <tr><td>TAP</td><td class="val crit" data-type="tap" data-j="CRITICAL"></td><td class="val perf" data-type="tap" data-j="PERFECT"></td><td class="val great" data-type="tap" data-j="GREAT"></td><td class="val good" data-type="tap" data-j="GOOD"></td><td class="val miss" data-type="tap" data-j="MISS"></td><td class="val total" id="tap_total"></td></tr>
             <tr><td>HOLD</td><td class="val crit" data-type="hold" data-j="CRITICAL"></td><td class="val perf" data-type="hold" data-j="PERFECT"></td><td class="val great" data-type="hold" data-j="GREAT"></td><td class="val good" data-type="hold" data-j="GOOD"></td><td class="val miss" data-type="hold" data-j="MISS"></td><td class="val total" id="hold_total"></td></tr>
             <tr><td>SLIDE</td><td class="val crit" data-type="slide" data-j="CRITICAL"></td><td class="val perf" data-type="slide" data-j="PERFECT"></td><td class="val great" data-type="slide" data-j="GREAT"></td><td class="val good" data-type="slide" data-j="GOOD"></td><td class="val miss" data-type="slide" data-j="MISS"></td><td class="val total" id="slide_total"></td></tr>
             <tr><td>TOUCH</td><td class="val crit" data-type="touch" data-j="CRITICAL"></td><td class="val perf" data-type="touch" data-j="PERFECT"></td><td class="val great" data-type="touch" data-j="GREAT"></td><td class="val good" data-type="touch" data-j="GOOD"></td><td class="val miss" data-type="touch" data-j="MISS"></td><td class="val total" id="touch_total"></td></tr>
@@ -201,37 +202,34 @@ const diffClass = diffMap[d.difficulty] || '';
 if (diffClass) lvl.className = 'diff-box ' + diffClass;
 function getTotal(note) { return note.CRITICAL + note.PERFECT + note.GREAT + note.GOOD + note.MISS; }
 function getMaxScore(note, w) { return getTotal(note) * w; }
-function getScore(type) {
-    const n = d.notes[type]; const w = weights[type];
-    const cp = n.CRITICAL + n.PERFECT;
-    const g = n.GREAT * 0.8;
-    const go = n.GOOD * (type === 'breaks' ? 0.4 : 0.5);
-    return Math.floor((cp + g + go) * w * 10000) / 10000;
-}
 function getJudgmentLoss(type, jud, count) {
     if (count === 0) return '0.0000';
     const w = weights[type];
-    const max = getMaxScore(d.notes[type], w);
+    const totalNotes = getTotal(d.notes[type]);
+    const maxScore = totalNotes * w;
     if (jud === 'CRITICAL' || jud === 'PERFECT') return '0.0000';
-    if (jud === 'GRE') return Math.floor((0.2 * w * count / max) * 100 * 10000) / 10000 + '';
-    if (jud === 'GOOD') return Math.floor(((type === 'breaks' ? 0.6 : 0.5) * w * count / max) * 100 * 10000) / 10000 + '';
-    if (jud === 'MISS') return Math.floor((w * count / max) * 100 * 10000) / 10000 + '';
-    return '0.0000';
+    let lossRate;
+    if (jud === 'GREAT') lossRate = 0.2;
+    else if (jud === 'GOOD') lossRate = (type === 'breaks') ? 0.6 : 0.5;
+    else if (jud === 'MISS') lossRate = 1.0;
+    else return '0.0000';
+    return (lossRate * w * count / maxScore * 100).toFixed(4);
 }
 function getTypeTotalLoss(type) {
-    const max = getMaxScore(d.notes[type], weights[type]);
-    const actual = getScore(type);
-    return max === 0 ? '0.0000' : Math.floor((max - actual) / max * 100 * 10000) / 10000 + '';
+    const n = d.notes[type]; const w = weights[type];
+    const totalNotes = getTotal(n);
+    const max = totalNotes * w;
+    const actual = (n.CRITICAL + n.PERFECT) * w + n.GREAT * w * 0.8 + n.GOOD * w * (w === 5 ? 0.4 : 0.5);
+    return max === 0 ? '0.0000' : ((max - actual) / max * 100).toFixed(4);
 }
 function getBreakBonus() {
     const b = d.notes.breaks; const B = getTotal(b); if (B === 0) return 0;
-    const bonus = (b.CRITICAL * 1.0 + sol['75%Perfect'] * 0.75 + sol['50%Perfect'] * 0.5 + (sol['80%Great'] + sol['60%Great'] + sol['50%Great']) * 0.4 + b.GOOD * 0.3) / B;
-    return Math.floor(bonus * 10000) / 10000;
+    return (b.CRITICAL * 1.0 + sol['75%Perfect'] * 0.75 + sol['50%Perfect'] * 0.5 + (sol['80%Great'] + sol['60%Great'] + sol['50%Great']) * 0.4 + b.GOOD * 0.3) / B;
 }
 function calcAll() {
     let W = 0, S = 0;
-    noteTypes.forEach(t => { const w = weights[t]; const n = d.notes[t]; W += getMaxScore(n, w); S += getScore(t); });
-    const notePct = Math.floor(S / W * 100 * 10000) / 10000;
+    noteTypes.forEach(t => { const w = weights[t]; const n = d.notes[t]; W += getMaxScore(n, w); S += (n.CRITICAL + n.PERFECT) * w + n.GREAT * w * 0.8 + n.GOOD * w * (w === 5 ? 0.4 : 0.5); });
+    const notePct = (S / W * 100);
     const bonusPct = getBreakBonus();
     const totalPct = notePct + bonusPct;
     document.getElementById('finalRate').textContent = Math.floor(totalPct * 10000) / 10000 + '%';
@@ -244,7 +242,7 @@ function calcAll() {
         document.getElementById(t + '_total').innerHTML = \`<span class="loss">-\${loss}%</span>\`;
         grandLoss += loss;
     });
-    document.getElementById('grand_total').innerHTML = \`<span class="loss">-\${Math.floor(grandLoss * 10000) / 10000}%</span>\`;
+    document.getElementById('grand_total').innerHTML = \`<span class="loss">-\${grandLoss.toFixed(4)}%</span>\`;
     document.getElementById('total_cp').innerHTML = \`<span class="count">\${totals.CRITICAL + totals.PERFECT}</span>\`;
     document.getElementById('total_g').innerHTML = \`<span class="count">\${totals.GREAT}</span>\`;
     document.getElementById('total_go').innerHTML = \`<span class="count">\${totals.GOOD}</span>\`;
