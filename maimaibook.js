@@ -209,17 +209,35 @@ function getJudgmentLoss(type, jud, count) {
     const maxScore = totalNotes * w;
     if (jud === 'CRITICAL' || jud === 'PERFECT') return '0.0000';
     let lossRate;
-    if (jud === 'GREAT') lossRate = 0.2;
-    else if (jud === 'GOOD') lossRate = (type === 'breaks') ? 0.6 : 0.5;
-    else if (jud === 'MISS') lossRate = 1.0;
-    else return '0.0000';
+    if (jud === 'GREAT') {
+        if (type === 'breaks') {
+            const g80 = sol['80%Great'], g60 = sol['60%Great'], g50 = sol['50%Great'];
+            const G = g80 + g60 + g50;
+            if (G === 0) return '0.0000';
+            const Sg = 0.8 * g80 + 0.6 * g60 + 0.5 * g50;
+            lossRate = 1 - (Sg / G);
+        } else {
+            lossRate = 0.2;
+        }
+    } else if (jud === 'GOOD') {
+        lossRate = (type === 'breaks') ? 0.6 : 0.5;
+    } else if (jud === 'MISS') {
+        lossRate = 1.0;
+    } else return '0.0000';
     return (lossRate * w * count / maxScore * 100).toFixed(4);
 }
 function getTypeTotalLoss(type) {
     const n = d.notes[type]; const w = weights[type];
     const totalNotes = getTotal(n);
     const max = totalNotes * w;
-    const actual = (n.CRITICAL + n.PERFECT) * w + n.GREAT * w * 0.8 + n.GOOD * w * (w === 5 ? 0.4 : 0.5);
+    let actual;
+    if (type === 'breaks') {
+        const g80 = sol['80%Great'], g60 = sol['60%Great'], g50 = sol['50%Great'];
+        const Sg = 0.8 * g80 + 0.6 * g60 + 0.5 * g50;
+        actual = (n.CRITICAL + n.PERFECT) * w + Sg * w + n.GOOD * w * 0.4;
+    } else {
+        actual = (n.CRITICAL + n.PERFECT) * w + n.GREAT * w * 0.8 + n.GOOD * w * 0.5;
+    }
     return max === 0 ? '0.0000' : ((max - actual) / max * 100).toFixed(4);
 }
 function getBreakBonus() {
@@ -228,7 +246,19 @@ function getBreakBonus() {
 }
 function calcAll() {
     let W = 0, S = 0;
-    noteTypes.forEach(t => { const w = weights[t]; const n = d.notes[t]; W += getMaxScore(n, w); S += (n.CRITICAL + n.PERFECT) * w + n.GREAT * w * 0.8 + n.GOOD * w * (w === 5 ? 0.4 : 0.5); });
+    noteTypes.forEach(t => {
+        const w = weights[t]; const n = d.notes[t];
+        W += getMaxScore(n, w);
+        let actual_t;
+        if (t === 'breaks') {
+            const g80 = sol['80%Great'], g60 = sol['60%Great'], g50 = sol['50%Great'];
+            const Sg = 0.8 * g80 + 0.6 * g60 + 0.5 * g50;
+            actual_t = (n.CRITICAL + n.PERFECT) * w + Sg * w + n.GOOD * w * 0.4;
+        } else {
+            actual_t = (n.CRITICAL + n.PERFECT) * w + n.GREAT * w * 0.8 + n.GOOD * w * 0.5;
+        }
+        S += actual_t;
+    });
     const notePct = (S / W * 100);
     const bonusPct = getBreakBonus();
     const totalPct = notePct + bonusPct;
