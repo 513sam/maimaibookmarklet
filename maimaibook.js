@@ -30,7 +30,7 @@ javascript:(function () {
     const trackCount = document.querySelector('body > div.wrapper.main_wrapper.t_c > div.p_10.t_l.f_0.v_b > div.playlog_top_container.p_r > div.sub_title.t_c.f_r.f_11 > span.red.f_b.v_b')?.textContent.trim() || null;
     const realTime = document.querySelector('body > div.wrapper.main_wrapper.t_c > div.p_10.t_l.f_0.v_b > div.playlog_top_container.p_r > div.sub_title.t_c.f_r.f_11 > span:nth-child(2)')?.textContent.trim() || null;
     const imgElement = document.querySelector('body > div.wrapper.main_wrapper.t_c > div.p_10.t_l.f_0.v_b > div[class*="playlog_"][class*="_container"] > div.p_r.f_0 > img.playlog_music_kind_icon')?.src || null;
-    const musicKind = imgElement ? (imgElement === 'https://maimaidx-eng.com/maimai-mobile/img/music_standard.png' ? 'standard' : imgElement === 'https://maimaidx-eng.com/maimai-mobile/img/music_dx.png' ? 'delux' : null) : null;
+    const musicKind = imgElement ? (imgElement === 'https://maimaidx-eng.com/maimai-mobile/img/music_standard.png' ? 'standard' : imgElement === 'https://maimaidx-eng.com/maimai-mobile/img/music_dx.png' ? 'dx' : null) : null;
     const diffImg = document.querySelector('img.playlog_diff.v_b')?.src || null;
     const difficulty = diffImg ? diffImg.match(/diff_([a-z]+)\.png$/i)?.[1] : null;
     const divElement = document.querySelector('div.playlog_achievement_txt.t_r');
@@ -66,7 +66,7 @@ javascript:(function () {
                     const bonusPercent = bonus * 1.0;
                     const total = notePercent + bonusPercent;
                     let shown = Math.floor(total * 10000) / 10000;
-                    if (shown.toFixed(4) === finalRate.toFixed(4)) {
+                    if (Math.abs(shown - finalRate) < 0.00005) {
                         solutions.push({
                             "75%Perfect": x, "50%Perfect": y, "80%Great": g80, "60%Great": g60, "50%Great": g50,
                             notePercent: parseFloat(notePercent.toFixed(4)), bonusPercent: parseFloat(bonusPercent.toFixed(4)),
@@ -194,10 +194,10 @@ document.getElementById('jacket').src = d.jacketImg || '';
 document.getElementById('songName').textContent = d.songName || 'Unknown';
 document.getElementById('track').textContent = 'Track ' + (d.trackCount || '?');
 document.getElementById('time').textContent = d.realTime || '??:??';
-document.getElementById('kind').textContent = d.musicKind === 'standard' ? 'Standard' : d.musicKind === 'delux' ? 'DX' : '?';
+document.getElementById('kind').textContent = d.musicKind === 'standard' ? 'Standard' : d.musicKind === 'dx' ? 'DX' : '?';
 const lvl = document.getElementById('level');
 lvl.textContent = 'Lv.' + (d.level || '??');
-const diffMap = {basic:'basic', advanced:'advanced', expert:'expert', master:'master', reMaster:'reMaster'};
+const diffMap = {basic:'basic', advanced:'advanced', expert:'expert', master:'master', reMaster:'reMaster', remaster:'reMaster'};
 const diffClass = diffMap[d.difficulty] || '';
 if (diffClass) lvl.className = 'diff-box ' + diffClass;
 function getTotal(note) { return note.CRITICAL + note.PERFECT + note.GREAT + note.GOOD + note.MISS; }
@@ -208,7 +208,7 @@ function getJudgmentLoss(type, jud, count) {
     const totalNotes = getTotal(d.notes[type]);
     const maxScore = totalNotes * w;
     if (jud === 'CRITICAL' || jud === 'PERFECT') return '0.0000';
-    let lossRate;
+    let lossRate = 0;
     if (jud === 'GREAT') {
         if (type === 'breaks') {
             const g80 = sol['80%Great'], g60 = sol['60%Great'], g50 = sol['50%Great'];
@@ -223,8 +223,8 @@ function getJudgmentLoss(type, jud, count) {
         lossRate = (type === 'breaks') ? 0.6 : 0.5;
     } else if (jud === 'MISS') {
         lossRate = 1.0;
-    } else return '0.0000';
-    return (lossRate * w * count / maxScore * 100).toFixed(4);
+    }
+    return ((lossRate * w * count / maxScore) * 100).toFixed(4);
 }
 function getTypeTotalLoss(type) {
     const n = d.notes[type]; const w = weights[type];
@@ -238,7 +238,7 @@ function getTypeTotalLoss(type) {
     } else {
         actual = (n.CRITICAL + n.PERFECT) * w + n.GREAT * w * 0.8 + n.GOOD * w * 0.5;
     }
-    return max === 0 ? '0.0000' : ((max - actual) / max * 100).toFixed(4);
+    return max === 0 ? '0.0000' : (((max - actual) / max) * 100).toFixed(4);
 }
 function getBreakBonus() {
     const b = d.notes.breaks; const B = getTotal(b); if (B === 0) return 0;
@@ -262,7 +262,7 @@ function calcAll() {
     const notePct = (S / W * 100);
     const bonusPct = getBreakBonus();
     const totalPct = notePct + bonusPct;
-    document.getElementById('finalRate').textContent = Math.floor(totalPct * 10000) / 10000 + '%';
+    document.getElementById('finalRate').textContent = totalPct.toFixed(4) + '%';
     const totals = { CRITICAL:0, PERFECT:0, GREAT:0, GOOD:0, MISS:0 };
     let grandLoss = 0;
     noteTypes.forEach(t => {
