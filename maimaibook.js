@@ -39,6 +39,7 @@ javascript:(function () {
     const match = text.match(/(\d+).(\d+)%/);
     if (!match) { console.error("달성률 파싱 실패:", text); return; }
     const finalRate = parseFloat(`${match[1]}.${match[2]}`);
+
     function calcAllSolutions(tap, hold, slide, touch, breakCounts, finalRate) {
         const weights = { TAP: 1, HOLD: 2, SLIDE: 3, TOUCH: 1, BREAK: 5 };
         const W = (tap.CRITICAL + tap.PERFECT + tap.GREAT + tap.GOOD + tap.MISS) * weights.TAP +
@@ -78,18 +79,21 @@ javascript:(function () {
         }
         return solutions;
     }
+
     const tap = { CRITICAL: tapCrit, PERFECT: tapPerfect, GREAT: tapGreat, GOOD: tapGood, MISS: tapMiss };
     const hold = { CRITICAL: holdCrit, PERFECT: holdPerfect, GREAT: holdGreat, GOOD: holdGood, MISS: holdMiss };
     const slide = { CRITICAL: slideCrit, PERFECT: slidePerfect, GREAT: slideGreat, GOOD: slideGood, MISS: slideMiss };
     const touch = { CRITICAL: touchCrit, PERFECT: touchPerfect, GREAT: touchGreat, GOOD: touchGood, MISS: touchMiss };
     const breaks = { CRITICAL: breakCrit, PERFECT: breakPerfect, GREAT: breakGreat, GOOD: breakGood, MISS: breakMiss };
     const results = calcAllSolutions(tap, hold, slide, touch, breaks, finalRate);
+
     const data = {
         songName, level, jacketImg, trackCount, realTime, musicKind, difficulty, finalRate,
         notes: { tap, hold, slide, touch, breaks },
         solutions: results.length > 0 ? results[0] : null
     };
     localStorage.setItem('maimaiResultData', JSON.stringify(data));
+
     const html = `<!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -200,6 +204,7 @@ lvl.textContent = 'Lv.' + (d.level || '??');
 const diffMap = {basic:'basic', advanced:'advanced', expert:'expert', master:'master', reMaster:'reMaster', remaster:'reMaster'};
 const diffClass = diffMap[d.difficulty] || '';
 if (diffClass) lvl.className = 'diff-box ' + diffClass;
+
 function getTotal(note) { return note.CRITICAL + note.PERFECT + note.GREAT + note.GOOD + note.MISS; }
 function getMaxScore(note, w) { return getTotal(note) * w; }
 function getJudgmentLoss(type, jud, count) {
@@ -263,13 +268,16 @@ function calcAll() {
     const bonusPct = getBreakBonus();
     const totalPct = notePct + bonusPct;
     document.getElementById('finalRate').textContent = totalPct.toFixed(4) + '%';
+
     const totals = { CRITICAL:0, PERFECT:0, GREAT:0, GOOD:0, MISS:0 };
     let grandLoss = 0;
     noteTypes.forEach(t => {
         const n = d.notes[t];
         ['CRITICAL','PERFECT','GREAT','GOOD','MISS'].forEach(j => totals[j] += n[j]);
         const loss = parseFloat(getTypeTotalLoss(t));
-        document.getElementById(t + '_total').innerHTML = \`<span class="loss">-\${loss}%</span>\`;
+        // === 여기만 수정됨 (id 불일치 해결) ===
+        const lossId = (t === 'breaks') ? 'break_total' : t + '_total';
+        document.getElementById(lossId).innerHTML = \`<span class="loss">-\${loss}%</span>\`;
         grandLoss += loss;
     });
     document.getElementById('grand_total').innerHTML = \`<span class="loss">-\${grandLoss.toFixed(4)}%</span>\`;
@@ -278,6 +286,7 @@ function calcAll() {
     document.getElementById('total_go').innerHTML = \`<span class="count">\${totals.GOOD}</span>\`;
     document.getElementById('total_m').innerHTML = \`<span class="count">\${totals.MISS}</span>\`;
 }
+
 function updateCell(cell) {
     const type = cell.dataset.type; const jud = cell.dataset.j; if (!type || !jud) return;
     const val = d.notes[type][jud];
@@ -357,6 +366,7 @@ calcAll();
 </script>
 </body>
 </html>`;
+
     const blob = new Blob([html], { type: 'text/html' });
     const url = URL.createObjectURL(blob);
     const btn = document.createElement('button');
