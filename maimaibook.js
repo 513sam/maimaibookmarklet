@@ -194,7 +194,7 @@ const orig = JSON.parse(JSON.stringify(d.notes));
 const sol = d.solutions || { '75%Perfect':0, '50%Perfect':0, '80%Great':0, '60%Great':0, '50%Great':0 };
 const noteTypes = ['tap','hold','slide','touch','breaks'];
 const weights = {tap:1, hold:2, slide:3, touch:1, breaks:5};
-let globalW = 0;   // ← 전체 최대 점수 (모든 손실률 계산에 공통 사용)
+let globalW = 0;
 
 document.getElementById('jacket').src = d.jacketImg || '';
 document.getElementById('songName').textContent = d.songName || 'Unknown';
@@ -226,6 +226,7 @@ function getBreakBonus() {
 }
 function getJudgmentLoss(type, jud, count) {
     if (count === 0 || jud === 'CRITICAL' || jud === 'PERFECT') return '0.0000';
+    if (globalW <= 0) return '0.0000';   // ← Infinity 방지
     const w = weights[type];
     let lossRate = 0;
     if (jud === 'GREAT') {
@@ -244,7 +245,7 @@ function getJudgmentLoss(type, jud, count) {
         lossRate = 1.0;
     }
     const lossAmount = lossRate * w * count;
-    return ((lossAmount / globalW) * 100).toFixed(4);   // ← 여기서 전체 W 기준으로 수정
+    return ((lossAmount / globalW) * 100).toFixed(4);
 }
 function calcAll() {
     let W = 0, S = 0;
@@ -254,7 +255,7 @@ function calcAll() {
         W += getMaxScore(n, w);
         S += getActualScore(t);
     });
-    globalW = W;   // ← 전체 최대 점수 저장 (이제 모든 손실률이 여기 기준)
+    globalW = W;
 
     const notePct = W === 0 ? 0 : (S / W * 100);
     const bonusPct = getBreakBonus();
@@ -338,6 +339,10 @@ function updateBreakCells() {
     if (perfCell) perfCell.innerHTML = \`<span class="count">\${sol['75%Perfect']}</span>-<span class="count">\${sol['50%Perfect']}</span>\`;
     if (greatCell) greatCell.innerHTML = \`<span class="count">\${sol['80%Great']}</span>-<span class="count">\${sol['60%Great']}</span>-<span class="count">\${sol['50%Great']}</span>\`;
 }
+
+// ===== 핵심 수정: calcAll 먼저 실행해서 globalW 확보 =====
+calcAll();   // ← 먼저 실행 (Infinity 방지 + TOTAL LOSS 먼저 계산)
+
 document.querySelectorAll('td.val').forEach(cell => {
     const type = cell.dataset.type; const jud = cell.dataset.j;
     if (!type || !jud) return;
@@ -345,6 +350,7 @@ document.querySelectorAll('td.val').forEach(cell => {
     updateCell(cell);
 });
 updateBreakCells();
+
 document.getElementById('resetBtn').onclick = () => {
     Object.assign(d.notes, JSON.parse(JSON.stringify(orig)));
     document.querySelectorAll('td.val').forEach(cell => {
@@ -356,7 +362,6 @@ document.getElementById('resetBtn').onclick = () => {
     updateBreakCells();
     calcAll();
 };
-calcAll();
 </script>
 </body>
 </html>`;
