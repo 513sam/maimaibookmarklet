@@ -131,13 +131,15 @@ javascript:(function () {
     .resetBtn{display:block;margin:20px auto 0;padding:12px 30px;background:linear-gradient(45deg,#f44336,#d32f2f);color:#fff;border:none;border-radius:25px;cursor:pointer;font-weight:900;font-size:1.2rem;transition:all 0.3s;box-shadow:0 5px 15px rgba(244,67,54,0.4);}
     .resetBtn:hover{background:linear-gradient(45deg,#ff5722,#e64a19);transform:translateY(-2px);}
     /* Score row */
-    .score-row{display:flex;align-items:center;justify-content:center;gap:30px;margin:30px 0 0;}
-    .finalRate{font-size:3.5rem;font-weight:900;background:linear-gradient(45deg,#ffeb3b,#ff9800);background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent;flex-shrink:0;}
-    .dx-box{background:rgba(255,255,255,0.07);border:2px solid rgba(100,200,255,0.4);border-radius:14px;padding:12px 20px;text-align:center;min-width:220px;}
-    .dx-title{font-size:0.75rem;color:#80cfff;font-weight:700;letter-spacing:1px;margin-bottom:4px;opacity:0.85;}
-    .dx-score-val{font-size:1.5rem;font-weight:900;color:#e0f4ff;line-height:1.1;}
-    .dx-rate{font-size:0.9rem;color:#80cfff;margin-top:3px;}
-    .dx-star{font-size:1.4rem;font-weight:900;margin-top:4px;color:#ffe066;text-shadow:0 0 8px rgba(255,224,102,0.7);}
+    .score-row{position:relative;display:flex;align-items:center;justify-content:center;margin:30px 0 0;min-height:70px;}
+    .finalRate{font-size:3.5rem;font-weight:900;background:linear-gradient(45deg,#ffeb3b,#ff9800);background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-align:center;}
+    .dx-box{position:absolute;right:0;background:rgba(255,255,255,0.07);border:2px solid rgba(100,200,255,0.4);border-radius:14px;padding:10px 16px;text-align:center;min-width:200px;}
+    .dx-title{font-size:0.7rem;color:#80cfff;font-weight:700;letter-spacing:1px;margin-bottom:3px;opacity:0.85;}
+    .dx-score-val{font-size:1.35rem;font-weight:900;color:#e0f4ff;line-height:1.1;}
+    .dx-rate-row{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:3px;}
+    .dx-rate{font-size:0.85rem;color:#80cfff;}
+    .dx-next{font-size:0.75rem;color:#ffb347;font-weight:700;}
+    .dx-star{font-size:1.3rem;font-weight:900;margin-top:3px;color:#ffe066;text-shadow:0 0 8px rgba(255,224,102,0.7);}
     /* Break sub-cells */
     .bk-sub{display:block;padding:4px 2px;border-bottom:1px solid rgba(255,235,59,0.25);text-align:center;}
     .bk-sub:last-child{border-bottom:none;}
@@ -211,7 +213,10 @@ javascript:(function () {
         <div class="dx-box">
             <div class="dx-title">DX SCORE</div>
             <div class="dx-score-val" id="dxScoreVal">0 / 0</div>
-            <div class="dx-rate" id="dxRatePct">0.00%</div>
+            <div class="dx-rate-row">
+                <span class="dx-rate" id="dxRatePct">0.0%</span>
+                <span class="dx-next" id="dxNext"></span>
+            </div>
             <div class="dx-star" id="dxStar">—</div>
         </div>
     </div>
@@ -420,12 +425,38 @@ function getDXRating(pct) {
     return '—';
 }
 
+function getNextRankInfo(score, maxScore) {
+    if (maxScore === 0) return null;
+    // 다음 등급 기준 (threshold %, next label)
+    const thresholds = [
+        [85, '★1'], [90, '★2'], [93, '★3'], [95, '★4'],
+        [97, '★5'], [98, '★5.5'], [99, '★6'], [99.5, '★6.5'], [100, '★7']
+    ];
+    const pct = score / maxScore * 100;
+    for (const [thr, label] of thresholds) {
+        if (pct < thr) {
+            // 이 등급에 도달하려면 필요한 최소 점수
+            const needed = Math.ceil(thr / 100 * maxScore);
+            const diff = needed - score;
+            return { label, diff };
+        }
+    }
+    return null; // 이미 ★7 (100%)
+}
+
 function updateDXScore() {
     const { score, maxScore } = calcDXScore();
     const pct = maxScore === 0 ? 0 : (score / maxScore * 100);
     document.getElementById('dxScoreVal').textContent = score + ' / ' + maxScore;
-    document.getElementById('dxRatePct').textContent  = pct.toFixed(4) + '%';
+    document.getElementById('dxRatePct').textContent  = pct.toFixed(1) + '%';
     document.getElementById('dxStar').textContent     = getDXRating(pct);
+    const next = getNextRankInfo(score, maxScore);
+    const nextEl = document.getElementById('dxNext');
+    if (next) {
+        nextEl.textContent = '(-' + next.diff + ' → ' + next.label + ')';
+    } else {
+        nextEl.textContent = '(MAX)';
+    }
 }
 
 function calcAll() {
