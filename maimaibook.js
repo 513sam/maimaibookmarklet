@@ -128,9 +128,16 @@ javascript:(function () {
     .great .loss,.good .loss,.miss .loss{color:#c2185b;}
     .arrow{cursor:pointer;font-size:0.8rem;margin:0 1px;color:#ff5722;transition:all 0.2s;opacity:0.8;}
     .arrow:hover{color:#ffeb3b;opacity:1;transform:scale(1.3);}
-    .finalRate{font-size:3.5rem;font-weight:900;margin:30px 0;text-align:center;background:linear-gradient(45deg,#ffeb3b,#ff9800);background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
     .resetBtn{display:block;margin:20px auto 0;padding:12px 30px;background:linear-gradient(45deg,#f44336,#d32f2f);color:#fff;border:none;border-radius:25px;cursor:pointer;font-weight:900;font-size:1.2rem;transition:all 0.3s;box-shadow:0 5px 15px rgba(244,67,54,0.4);}
     .resetBtn:hover{background:linear-gradient(45deg,#ff5722,#e64a19);transform:translateY(-2px);}
+    /* Score row */
+    .score-row{display:flex;align-items:center;justify-content:center;gap:30px;margin:30px 0 0;}
+    .finalRate{font-size:3.5rem;font-weight:900;background:linear-gradient(45deg,#ffeb3b,#ff9800);background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent;flex-shrink:0;}
+    .dx-box{background:rgba(255,255,255,0.07);border:2px solid rgba(100,200,255,0.4);border-radius:14px;padding:12px 20px;text-align:center;min-width:220px;}
+    .dx-title{font-size:0.75rem;color:#80cfff;font-weight:700;letter-spacing:1px;margin-bottom:4px;opacity:0.85;}
+    .dx-score-val{font-size:1.5rem;font-weight:900;color:#e0f4ff;line-height:1.1;}
+    .dx-rate{font-size:0.9rem;color:#80cfff;margin-top:3px;}
+    .dx-star{font-size:1.4rem;font-weight:900;margin-top:4px;color:#ffe066;text-shadow:0 0 8px rgba(255,224,102,0.7);}
     /* Break sub-cells */
     .bk-sub{display:block;padding:4px 2px;border-bottom:1px solid rgba(255,235,59,0.25);text-align:center;}
     .bk-sub:last-child{border-bottom:none;}
@@ -199,7 +206,15 @@ javascript:(function () {
             </tr>
         </tbody>
     </table>
-    <div class="finalRate" id="finalRate">101.0000%</div>
+    <div class="score-row">
+        <div class="finalRate" id="finalRate">101.0000%</div>
+        <div class="dx-box">
+            <div class="dx-title">DX SCORE</div>
+            <div class="dx-score-val" id="dxScoreVal">0 / 0</div>
+            <div class="dx-rate" id="dxRatePct">0.00%</div>
+            <div class="dx-star" id="dxStar">—</div>
+        </div>
+    </div>
     <button class="resetBtn" id="resetBtn">원래대로 리셋</button>
 </div>
 <script>
@@ -372,6 +387,47 @@ function getJudgmentLoss(type, jud, count) {
     return ((lossRate * w * count / globalW) * 100).toFixed(4);
 }
 
+function calcDXScore() {
+    let score = 0, maxScore = 0;
+    noteTypes.forEach(t => {
+        const n = d.notes[t];
+        const total = getTotal(n);
+        maxScore += total * 3;
+        if (t === 'breaks') {
+            score += n.CRITICAL * 3;
+            // Perfect 계열(75%P + 50%P) = 2점씩
+            score += (sol['75%Perfect'] + sol['50%Perfect']) * 2;
+            // Great 계열(80%G + 60%G + 50%G) = 1점씩
+            score += (sol['80%Great'] + sol['60%Great'] + sol['50%Great']) * 1;
+            // GOOD / MISS = 0점
+        } else {
+            score += n.CRITICAL * 3 + n.PERFECT * 2 + n.GREAT * 1;
+        }
+    });
+    return { score, maxScore };
+}
+
+function getDXRating(pct) {
+    if (pct >= 100)  return '★7';
+    if (pct >= 99.5) return '★6.5';
+    if (pct >= 99)   return '★6';
+    if (pct >= 98)   return '★5.5';
+    if (pct >= 97)   return '★5';
+    if (pct >= 95)   return '★4';
+    if (pct >= 93)   return '★3';
+    if (pct >= 90)   return '★2';
+    if (pct >= 85)   return '★1';
+    return '—';
+}
+
+function updateDXScore() {
+    const { score, maxScore } = calcDXScore();
+    const pct = maxScore === 0 ? 0 : (score / maxScore * 100);
+    document.getElementById('dxScoreVal').textContent = score + ' / ' + maxScore;
+    document.getElementById('dxRatePct').textContent  = pct.toFixed(4) + '%';
+    document.getElementById('dxStar').textContent     = getDXRating(pct);
+}
+
 function calcAll() {
     let W = 0, S = 0;
     noteTypes.forEach(t => { W += getMaxScore(d.notes[t], weights[t]); S += getActualScore(t); });
@@ -406,6 +462,7 @@ function calcAll() {
     document.getElementById('total_g').innerHTML   = \`<span class="count">\${totals.GREAT}</span>\`;
     document.getElementById('total_go').innerHTML  = \`<span class="count">\${totals.GOOD}</span>\`;
     document.getElementById('total_m').innerHTML   = \`<span class="count">\${totals.MISS}</span>\`;
+    updateDXScore();
 }
 
 // ===== 일반 노트 셀 업데이트 =====
