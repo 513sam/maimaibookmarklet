@@ -125,6 +125,7 @@ javascript:(function () {
     .total{background:linear-gradient(45deg,#424242,#212121);color:#ffeb3b;font-weight:900;}
     .count{font-size:1.6rem;font-weight:900;line-height:1;display:block;}
     .loss{font-size:0.7rem;display:block;margin-top:2px;font-weight:700;opacity:0.9;}
+    .total .loss{font-size:0.95rem;}
     .great .loss,.good .loss,.miss .loss{color:#c2185b;}
     .arrow{cursor:pointer;font-size:0.8rem;margin:0 1px;color:#ff5722;transition:all 0.2s;opacity:0.8;}
     .arrow:hover{color:#ffeb3b;opacity:1;transform:scale(1.3);}
@@ -476,6 +477,7 @@ function calcAll() {
     const grandLoss = (100 - notePct) + (1.0 - bonusPct);
     document.getElementById('grand_total').innerHTML = \`<span class="loss">-\${grandLoss.toFixed(4)}%</span>\`;
     document.getElementById('total_cp').innerHTML  = \`<span class="count">\${totals.CRITICAL + totals.PERFECT}</span>\`;
+    document.getElementById('total_p').innerHTML   = \`<span class="count">\${totals.PERFECT}</span>\`;
     document.getElementById('total_g').innerHTML   = \`<span class="count">\${totals.GREAT}</span>\`;
     document.getElementById('total_go').innerHTML  = \`<span class="count">\${totals.GOOD}</span>\`;
     document.getElementById('total_m').innerHTML   = \`<span class="count">\${totals.MISS}</span>\`;
