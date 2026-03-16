@@ -136,7 +136,8 @@ javascript:(function () {
     .dx-box{background:rgba(255,255,255,0.07);border:2px solid rgba(100,200,255,0.4);border-radius:14px;padding:12px 20px;text-align:center;min-width:220px;}
     .dx-title{font-size:0.75rem;color:#80cfff;font-weight:700;letter-spacing:1px;margin-bottom:4px;opacity:0.85;}
     .dx-score-val{font-size:1.5rem;font-weight:900;color:#e0f4ff;line-height:1.1;}
-    .dx-star{font-size:1.2rem;font-weight:900;margin-top:5px;color:#ffe066;text-shadow:0 0 8px rgba(255,224,102,0.7);white-space:nowrap;letter-spacing:2px;}
+    .dx-star{font-size:2rem;font-weight:900;margin-top:5px;color:#ffe066;text-shadow:0 0 8px rgba(255,224,102,0.7);letter-spacing:2px;}
+    .dx-next{font-size:0.8rem;color:#aaa;margin-top:4px;}
     /* Break sub-cells */
     .bk-sub{display:block;padding:4px 2px;border-bottom:1px solid rgba(255,235,59,0.25);text-align:center;}
     .bk-sub:last-child{border-bottom:none;}
@@ -211,6 +212,7 @@ javascript:(function () {
             <div class="dx-title">DX SCORE</div>
             <div class="dx-score-val" id="dxScoreVal">0 / 0</div>
             <div class="dx-star" id="dxStar">—</div>
+            <div class="dx-next" id="dxNext"></div>
         </div>
     </div>
     <button class="resetBtn" id="resetBtn">원래대로 리셋</button>
@@ -432,14 +434,15 @@ function updateDXScore() {
     const { star, next, nextPct } = getDXRating(pct);
 
     document.getElementById('dxScoreVal').textContent = score + ' / ' + maxScore;
+    document.getElementById('dxStar').textContent = star;
 
-    let starText = star;
     if (next !== null && nextPct !== null) {
-        // 다음 등급까지 필요한 점수 = ceil(nextPct/100 * maxScore) - score
         const needed = Math.ceil(nextPct / 100 * maxScore) - score;
-        starText = star + '  -' + needed;
+        document.getElementById('dxNext').textContent =
+            pct.toFixed(2) + '%  (' + next + '  -' + needed + ')';
+    } else {
+        document.getElementById('dxNext').textContent = pct.toFixed(2) + '%';
     }
-    document.getElementById('dxStar').textContent = starText;
 }
 
 function calcAll() {
