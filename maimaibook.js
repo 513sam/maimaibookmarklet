@@ -105,7 +105,7 @@ javascript:(function () {
     .container{max-width:1200px;margin:0 auto;padding:20px;background:rgba(30,30,40,0.95);border-radius:15px;box-shadow:0 20px 40px rgba(0,0,0,0.5);backdrop-filter:blur(10px);}
     .header{position:relative;text-align:center;margin-bottom:30px;}
     .header img{width:100%;max-height:280px;object-fit:cover;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,0.7);}
-    .header .title{position:absolute;bottom:15px;left:15px;right:15px;font-size:2.5rem;font-weight:900;color:#fff;-webkit-text-stroke:2px #000;text-stroke:2px #000;text-shadow:0 0 8px #000;}
+    .header .title{position:absolute;bottom:15px;left:15px;right:15px;font-size:2.5rem;font-weight:900;color:#fff;-webkit-text-stroke:2px #000;text-shadow:0 0 8px #000;}
     .header .info{position:absolute;top:15px;right:15px;text-align:right;font-size:1.1rem;background:rgba(0,0,0,0.8);padding:12px 15px;border-radius:10px;}
     .header .info div{margin:6px 0;}
     .diff-box{padding:8px 16px;border-radius:8px;display:inline-block;font-weight:900;font-size:1.2rem;text-shadow:1px 1px 2px #000;}
@@ -125,19 +125,19 @@ javascript:(function () {
     .total{background:linear-gradient(45deg,#424242,#212121);color:#ffeb3b;font-weight:900;}
     .count{font-size:1.6rem;font-weight:900;line-height:1;display:block;}
     .loss{font-size:0.7rem;display:block;margin-top:2px;font-weight:700;opacity:0.9;}
-    .crit .loss,.perf .loss{color:transparent;}
-    .great .loss{color:#c2185b;}
-    .good .loss{color:#388e3c;}
-    .miss .loss{color:#bbb;}
+    .great .loss,.good .loss,.miss .loss{color:#c2185b;}
     .arrow{cursor:pointer;font-size:0.8rem;margin:0 1px;color:#ff5722;transition:all 0.2s;opacity:0.8;}
     .arrow:hover{color:#ffeb3b;opacity:1;transform:scale(1.3);}
-    .finalRate{font-size:3.5rem;font-weight:900;margin:30px 0;text-align:center;background:linear-gradient(45deg,#ffeb3b,#ff9800);background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-shadow:0 0 20px rgba(255,235,59,0.5);}
+    .finalRate{font-size:3.5rem;font-weight:900;margin:30px 0;text-align:center;background:linear-gradient(45deg,#ffeb3b,#ff9800);background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
     .resetBtn{display:block;margin:20px auto 0;padding:12px 30px;background:linear-gradient(45deg,#f44336,#d32f2f);color:#fff;border:none;border-radius:25px;cursor:pointer;font-weight:900;font-size:1.2rem;transition:all 0.3s;box-shadow:0 5px 15px rgba(244,67,54,0.4);}
-    .resetBtn:hover{background:linear-gradient(45deg,#ff5722,#e64a19);transform:translateY(-2px);box-shadow:0 8px 25px rgba(244,67,54,0.6);}
-    .break-sub{display:block;padding:3px 2px;border-bottom:1px solid rgba(255,235,59,0.3);line-height:1.2;}
-    .break-sub:last-child{border-bottom:none;}
-    .break-sub .loss{color:#c2185b;}
-    .break-sub.perf-sub .loss{color:#b8860b;}
+    .resetBtn:hover{background:linear-gradient(45deg,#ff5722,#e64a19);transform:translateY(-2px);}
+    /* Break sub-cells */
+    .bk-sub{display:block;padding:4px 2px;border-bottom:1px solid rgba(255,235,59,0.25);text-align:center;}
+    .bk-sub:last-child{border-bottom:none;}
+    .bk-lbl{font-size:0.6rem;opacity:0.65;display:block;line-height:1.2;}
+    .bk-count{font-size:1.3rem;font-weight:900;line-height:1;display:block;}
+    .bk-loss{font-size:0.65rem;display:block;margin-top:1px;font-weight:700;color:#c2185b;}
+    .bk-cell{vertical-align:middle;}
 </style>
 </head>
 <body>
@@ -171,18 +171,22 @@ javascript:(function () {
             <tr><td>TOUCH</td><td class="val crit" data-type="touch" data-j="CRITICAL"></td><td class="val perf" data-type="touch" data-j="PERFECT"></td><td class="val great" data-type="touch" data-j="GREAT"></td><td class="val good" data-type="touch" data-j="GOOD"></td><td class="val miss" data-type="touch" data-j="MISS"></td><td class="val total" id="touch_total"></td></tr>
             <tr>
                 <td>BREAK</td>
-                <td class="val crit" data-type="breaks" data-j="CRITICAL"></td>
+                <!-- CRITICAL: id=break_crit, no data-type/data-j so generic updateCell skips it -->
+                <td class="crit bk-cell" id="break_crit"></td>
+                <!-- PERFECT: 2 sub-divs -->
                 <td class="perf" style="padding:0;">
-                    <div class="break-sub perf-sub" id="break75p" data-sub="75p"></div>
-                    <div class="break-sub perf-sub" id="break50p" data-sub="50p"></div>
+                    <div class="bk-sub" id="break75p"></div>
+                    <div class="bk-sub" id="break50p"></div>
                 </td>
+                <!-- GREAT: 3 sub-divs -->
                 <td class="great" style="padding:0;">
-                    <div class="break-sub" id="break80g" data-sub="80g"></div>
-                    <div class="break-sub" id="break60g" data-sub="60g"></div>
-                    <div class="break-sub" id="break50g" data-sub="50g"></div>
+                    <div class="bk-sub" id="break80g"></div>
+                    <div class="bk-sub" id="break60g"></div>
+                    <div class="bk-sub" id="break50g"></div>
                 </td>
-                <td class="val good" data-type="breaks" data-j="GOOD"></td>
-                <td class="val miss" data-type="breaks" data-j="MISS"></td>
+                <!-- GOOD / MISS: bk-cell only, no data-type/data-j -->
+                <td class="good bk-cell" id="break_good"></td>
+                <td class="miss bk-cell" id="break_miss"></td>
                 <td class="val total" id="break_total"></td>
             </tr>
             <tr><td class="total"><b>TOTAL</b></td>
@@ -203,7 +207,8 @@ const raw = localStorage.getItem('maimaiResultData');
 if (!raw) { document.body.innerHTML = '<h1 style="color:#f66;text-align:center;">데이터 없음</h1>'; throw new Error('No data'); }
 const d = JSON.parse(raw);
 const orig = JSON.parse(JSON.stringify(d.notes));
-const sol = d.solutions || { '75%Perfect':0, '50%Perfect':0, '80%Great':0, '60%Great':0, '50%Great':0 };
+const origSol = d.solutions ? JSON.parse(JSON.stringify(d.solutions)) : { '75%Perfect':0,'50%Perfect':0,'80%Great':0,'60%Great':0,'50%Great':0 };
+const sol = d.solutions || { '75%Perfect':0,'50%Perfect':0,'80%Great':0,'60%Great':0,'50%Great':0 };
 const noteTypes = ['tap','hold','slide','touch','breaks'];
 const weights = {tap:1, hold:2, slide:3, touch:1, breaks:5};
 let globalW = 0;
@@ -215,270 +220,259 @@ document.getElementById('time').textContent = d.realTime || '??:??';
 document.getElementById('kind').textContent = d.musicKind === 'standard' ? 'Standard' : d.musicKind === 'dx' ? 'DX' : '?';
 const lvl = document.getElementById('level');
 lvl.textContent = 'Lv.' + (d.level || '??');
-const diffMap = {basic:'basic', advanced:'advanced', expert:'expert', master:'master', reMaster:'reMaster', remaster:'reMaster'};
+const diffMap = {basic:'basic',advanced:'advanced',expert:'expert',master:'master',reMaster:'reMaster',remaster:'reMaster'};
 const diffClass = diffMap[d.difficulty] || '';
 if (diffClass) lvl.className = 'diff-box ' + diffClass;
 
+// ===== 브레이크 서브 판정 계층 =====
+// 순서: CP > 75%P > 50%P > 80%G > 60%G > 50%G > GOOD > MISS
+// 총 BREAK 노트 수는 항상 유지됨
+const BH = ['CRITICAL','75%Perfect','50%Perfect','80%Great','60%Great','50%Great','GOOD','MISS'];
+const BH_UPPER = new Set(['CRITICAL','75%Perfect','50%Perfect']); // 상위: 바로 아래에서 차감
+// 하위(80%G 이하): 올릴 때 CP에서 차감
+
+const BH_IDS = {
+    'CRITICAL':'break_crit', '75%Perfect':'break75p', '50%Perfect':'break50p',
+    '80%Great':'break80g', '60%Great':'break60g', '50%Great':'break50g',
+    'GOOD':'break_good', 'MISS':'break_miss'
+};
+const BH_LABELS = {
+    'CRITICAL':'CP', '75%Perfect':'75%P', '50%Perfect':'50%P',
+    '80%Great':'80%G', '60%Great':'60%G', '50%Great':'50%G',
+    'GOOD':'GOOD', 'MISS':'MISS'
+};
+
+function getBreakVal(key) {
+    if (key === 'CRITICAL') return d.notes.breaks.CRITICAL;
+    if (key === 'GOOD')     return d.notes.breaks.GOOD;
+    if (key === 'MISS')     return d.notes.breaks.MISS;
+    return sol[key] || 0;
+}
+function setBreakVal(key, val) {
+    if (key === 'CRITICAL') { d.notes.breaks.CRITICAL = val; return; }
+    if (key === 'GOOD')     { d.notes.breaks.GOOD = val; return; }
+    if (key === 'MISS')     { d.notes.breaks.MISS = val; return; }
+    sol[key] = val;
+    // 집계 갱신
+    d.notes.breaks.PERFECT = sol['75%Perfect'] + sol['50%Perfect'];
+    d.notes.breaks.GREAT   = sol['80%Great']   + sol['60%Great']  + sol['50%Great'];
+}
+
+// ↑ : 이 판정 개수 +1
+//   상위(CP/75%P/50%P) → 바로 아래 계층에서 차감 (없으면 그 다음 아래)
+//   하위(80%G 이하)    → CP에서 차감
+function adjustBreakUp(key) {
+    const idx = BH.indexOf(key);
+    if (idx < 0) return;
+    if (BH_UPPER.has(key)) {
+        for (let i = idx + 1; i < BH.length; i++) {
+            if (getBreakVal(BH[i]) > 0) {
+                setBreakVal(key,   getBreakVal(key)   + 1);
+                setBreakVal(BH[i], getBreakVal(BH[i]) - 1);
+                return;
+            }
+        }
+    } else {
+        if (d.notes.breaks.CRITICAL > 0) {
+            setBreakVal(key, getBreakVal(key) + 1);
+            d.notes.breaks.CRITICAL--;
+        }
+    }
+}
+
+// ↓ : 이 판정 개수 -1
+//   CP → 80%G에 +1  (CP 위에 더 높은 판정 없음, 특별 규칙)
+//   나머지 → 바로 위 계층에 +1
+function adjustBreakDown(key) {
+    if (getBreakVal(key) === 0) return;
+    const idx = BH.indexOf(key);
+    if (key === 'CRITICAL') {
+        setBreakVal('CRITICAL', d.notes.breaks.CRITICAL - 1);
+        setBreakVal('80%Great', getBreakVal('80%Great') + 1);
+    } else {
+        const above = BH[idx - 1];
+        setBreakVal(key,   getBreakVal(key)   - 1);
+        setBreakVal(above, getBreakVal(above) + 1);
+    }
+}
+
+// 각 브레이크 서브 판정의 손실률 계산
+// Perfect 계열 → 보너스 손실 (% 포인트)
+// Great/Good/Miss → 노트 스코어 손실 (% 포인트)
+function getBreakSubLoss(key, count) {
+    if (count === 0 || globalW <= 0) return null;
+    const B = getTotal(d.notes.breaks);
+    if (B === 0) return null;
+    if (key === '75%Perfect') return (0.25 * count / B).toFixed(4);
+    if (key === '50%Perfect') return (0.50 * count / B).toFixed(4);
+    if (key === '80%Great')   return (1.0  * count / globalW * 100).toFixed(4);
+    if (key === '60%Great')   return (2.0  * count / globalW * 100).toFixed(4);
+    if (key === '50%Great')   return (2.5  * count / globalW * 100).toFixed(4);
+    if (key === 'GOOD')       return (3.0  * count / globalW * 100).toFixed(4);
+    if (key === 'MISS')       return (5.0  * count / globalW * 100).toFixed(4);
+    return null; // CRITICAL은 손실 없음
+}
+
+function renderBreakCell(key) {
+    const el = document.getElementById(BH_IDS[key]);
+    if (!el) return;
+    const count = getBreakVal(key);
+    const loss  = getBreakSubLoss(key, count);
+    el.innerHTML = '';
+    // 라벨
+    const lbl = document.createElement('span');
+    lbl.className = 'bk-lbl';
+    lbl.textContent = BH_LABELS[key];
+    el.appendChild(lbl);
+    // 개수
+    const cnt = document.createElement('span');
+    cnt.className = 'bk-count';
+    cnt.textContent = count;
+    el.appendChild(cnt);
+    // 손실률
+    if (loss && loss !== '0.0000') {
+        const ls = document.createElement('span');
+        ls.className = 'bk-loss';
+        ls.textContent = '-' + loss + '%';
+        el.appendChild(ls);
+    }
+    // 화살표
+    const up = document.createElement('span'); up.className = 'arrow'; up.textContent = '↑';
+    up.onclick = function() { adjustBreakUp(key); updateAllBreakCells(); calcAll(); };
+    const dn = document.createElement('span'); dn.className = 'arrow'; dn.textContent = '↓';
+    dn.onclick = function() { adjustBreakDown(key); updateAllBreakCells(); calcAll(); };
+    el.appendChild(up); el.appendChild(dn);
+}
+
+function updateAllBreakCells() {
+    BH.forEach(renderBreakCell);
+}
+
+// ===== 일반 노트 계산 =====
 function getTotal(note) { return note.CRITICAL + note.PERFECT + note.GREAT + note.GOOD + note.MISS; }
 function getMaxScore(note, w) { return getTotal(note) * w; }
 function getActualScore(type) {
-    const n = d.notes[type];
-    const w = weights[type];
+    const n = d.notes[type], w = weights[type];
     if (type === 'breaks') {
-        const g80 = sol['80%Great'], g60 = sol['60%Great'], g50 = sol['50%Great'];
-        const Sg = 0.8 * g80 + 0.6 * g60 + 0.5 * g50;
+        const Sg = 0.8*sol['80%Great'] + 0.6*sol['60%Great'] + 0.5*sol['50%Great'];
         return (n.CRITICAL + n.PERFECT) * w + Sg * w + n.GOOD * w * 0.4;
-    } else {
-        return (n.CRITICAL + n.PERFECT) * w + n.GREAT * w * 0.8 + n.GOOD * w * 0.5;
     }
+    return (n.CRITICAL + n.PERFECT) * w + n.GREAT * w * 0.8 + n.GOOD * w * 0.5;
 }
 function getBreakBonus() {
-    const b = d.notes.breaks; const B = getTotal(b); if (B === 0) return 0;
-    return (b.CRITICAL * 1.0 + sol['75%Perfect'] * 0.75 + sol['50%Perfect'] * 0.5 + (sol['80%Great'] + sol['60%Great'] + sol['50%Great']) * 0.4 + b.GOOD * 0.3) / B;
+    const b = d.notes.breaks, B = getTotal(b);
+    if (B === 0) return 0;
+    return (b.CRITICAL + sol['75%Perfect']*0.75 + sol['50%Perfect']*0.5 +
+            (sol['80%Great']+sol['60%Great']+sol['50%Great'])*0.4 + b.GOOD*0.3) / B;
 }
-
-// 일반 판정 손실률 (노트 스코어 기준)
 function getJudgmentLoss(type, jud, count) {
-    if (count === 0 || jud === 'CRITICAL' || jud === 'PERFECT') return '0.0000';
-    if (globalW <= 0) return '0.0000';
+    if (count === 0 || jud === 'CRITICAL' || jud === 'PERFECT' || globalW <= 0) return '0.0000';
     const w = weights[type];
-    let lossRate = 0;
-    if (jud === 'GREAT') lossRate = 0.2;
-    else if (jud === 'GOOD') lossRate = (type === 'breaks') ? 0.6 : 0.5;
-    else if (jud === 'MISS') lossRate = 1.0;
-    const lossAmount = lossRate * w * count;
-    return ((lossAmount / globalW) * 100).toFixed(4);
-}
-
-// 브레이크 서브판정별 손실률
-// 퍼펙트 계열: 노트스코어 손실 없음, 보너스 손실만 표시
-// 그레잇 계열: 노트스코어 손실 표시
-function getBreakSubLoss(sub, count) {
-    if (count === 0 || globalW <= 0) return '0.0000';
-    const B = getTotal(d.notes.breaks);
-    if (B === 0) return '0.0000';
-    if (sub === '75p') {
-        // 보너스 손실: (1 - 0.75) * count / B
-        return (0.25 * count / B).toFixed(4);
-    }
-    if (sub === '50p') {
-        // 보너스 손실: (1 - 0.5) * count / B
-        return (0.5 * count / B).toFixed(4);
-    }
-    if (sub === '80g') {
-        // 노트스코어 손실: (1 - 0.8) * 5 * count / W * 100
-        return (1.0 * count / globalW * 100).toFixed(4);
-    }
-    if (sub === '60g') {
-        return (2.0 * count / globalW * 100).toFixed(4);
-    }
-    if (sub === '50g') {
-        return (2.5 * count / globalW * 100).toFixed(4);
-    }
-    return '0.0000';
+    const lossRate = jud === 'GREAT' ? 0.2 : jud === 'GOOD' ? (type==='breaks'?0.6:0.5) : 1.0;
+    return ((lossRate * w * count / globalW) * 100).toFixed(4);
 }
 
 function calcAll() {
     let W = 0, S = 0;
-    noteTypes.forEach(t => {
-        const w = weights[t];
-        const n = d.notes[t];
-        W += getMaxScore(n, w);
-        S += getActualScore(t);
-    });
+    noteTypes.forEach(t => { W += getMaxScore(d.notes[t], weights[t]); S += getActualScore(t); });
     globalW = W;
-    const notePct = W === 0 ? 0 : (S / W * 100);
-    const bonusPct = getBreakBonus();
-    const totalPct = notePct + bonusPct;
-    const noteLossTotal = 100 - notePct;
+    const notePct     = W === 0 ? 0 : (S / W * 100);
+    const bonusPct    = getBreakBonus();
+    const totalPct    = notePct + bonusPct;
     document.getElementById('finalRate').textContent = totalPct.toFixed(4) + '%';
-    const totals = { CRITICAL:0, PERFECT:0, GREAT:0, GOOD:0, MISS:0 };
+
+    const totals = {CRITICAL:0, PERFECT:0, GREAT:0, GOOD:0, MISS:0};
     noteTypes.forEach(t => {
         const n = d.notes[t];
         ['CRITICAL','PERFECT','GREAT','GOOD','MISS'].forEach(j => totals[j] += n[j]);
-        const max_t = getMaxScore(n, weights[t]);
+        const max_t    = getMaxScore(n, weights[t]);
         const actual_t = getActualScore(t);
-        const lossContrib = max_t === 0 ? 0 : ((max_t - actual_t) / W * 100);
-        const lossId = t === 'breaks' ? 'break_total' : t + '_total';
-        document.getElementById(lossId).innerHTML = \`<span class="loss">-\${lossContrib.toFixed(4)}%</span>\`;
-    });
-    document.getElementById('grand_total').innerHTML = \`<span class="loss">-\${noteLossTotal.toFixed(4)}%</span>\`;
-    document.getElementById('total_cp').innerHTML = \`<span class="count">\${totals.CRITICAL + totals.PERFECT}</span>\`;
-    document.getElementById('total_g').innerHTML = \`<span class="count">\${totals.GREAT}</span>\`;
-    document.getElementById('total_go').innerHTML = \`<span class="count">\${totals.GOOD}</span>\`;
-    document.getElementById('total_m').innerHTML = \`<span class="count">\${totals.MISS}</span>\`;
-}
-
-// 브레이크 서브판정 렌더링
-function renderBreakSub(id, sub, label, count) {
-    const cell = document.getElementById(id);
-    if (!cell) return;
-    const loss = getBreakSubLoss(sub, count);
-    const showLoss = loss !== '0.0000';
-    cell.innerHTML = '';
-    const lbl = document.createElement('span');
-    lbl.style.cssText = 'font-size:0.65rem;opacity:0.7;display:block;';
-    lbl.textContent = label;
-    cell.appendChild(lbl);
-    const cnt = document.createElement('span');
-    cnt.className = 'count';
-    cnt.style.fontSize = '1.3rem';
-    cnt.textContent = count;
-    cell.appendChild(cnt);
-    if (showLoss) {
-        const lossSpan = document.createElement('span');
-        lossSpan.className = 'loss';
-        lossSpan.textContent = '-' + loss + '%';
-        cell.appendChild(lossSpan);
-    }
-    // 화살표
-    const upArrow = document.createElement('span');
-    upArrow.className = 'arrow';
-    upArrow.textContent = '↑';
-    upArrow.onclick = function() { adjustBreakSub(sub, 1); };
-    const downArrow = document.createElement('span');
-    downArrow.className = 'arrow';
-    downArrow.textContent = '↓';
-    downArrow.onclick = function() { adjustBreakSub(sub, -1); };
-    cell.appendChild(upArrow);
-    cell.appendChild(downArrow);
-}
-
-function updateBreakSub() {
-    renderBreakSub('break75p', '75p', '75%Perfect', sol['75%Perfect']);
-    renderBreakSub('break50p', '50p', '50%Perfect', sol['50%Perfect']);
-    renderBreakSub('break80g', '80g', '80%Great',   sol['80%Great']);
-    renderBreakSub('break60g', '60g', '60%Great',   sol['60%Great']);
-    renderBreakSub('break50g', '50g', '50%Great',   sol['50%Great']);
-}
-
-function adjustBreakSub(sub, delta) {
-    // PERFECT 계열: 합계(75%P + 50%P) 고정, 서로 반대로 조정
-    if (sub === '75p' || sub === '50p') {
-        const totalP = sol['75%Perfect'] + sol['50%Perfect'];
-        const key    = sub === '75p' ? '75%Perfect' : '50%Perfect';
-        const other  = sub === '75p' ? '50%Perfect' : '75%Perfect';
-        const target = sol[key] + delta;
-        if (target < 0 || target > totalP) return;
-        sol[key]   = target;
-        sol[other] = totalP - target;
-    }
-    // GREAT 계열: 합계(80%G + 60%G + 50%G) 고정, 남은 건 50%G가 흡수
-    else if (sub === '80g' || sub === '60g' || sub === '50g') {
-        const totalG = sol['80%Great'] + sol['60%Great'] + sol['50%Great'];
-        const keyMap = { '80g':'80%Great', '60g':'60%Great', '50g':'50%Great' };
-        const key = keyMap[sub];
-        const target = sol[key] + delta;
-        if (target < 0 || target > totalG) return;
-        // 조정한 키 변경, 나머지 두 개 중 50%가 우선으로 차액 흡수
-        const diff = target - sol[key];
-        sol[key] = target;
-        if (sub !== '50g') {
-            // 50%Great가 여유분 흡수
-            const newFifty = sol['50%Great'] - diff;
-            if (newFifty >= 0) {
-                sol['50%Great'] = newFifty;
-            } else {
-                // 50%Great 부족하면 60%Great도 조정
-                sol['60%Great'] += newFifty; // newFifty < 0
-                sol['50%Great'] = 0;
-                if (sol['60%Great'] < 0) {
-                    sol['80%Great'] += sol['60%Great'];
-                    sol['60%Great'] = 0;
-                }
-            }
+        if (t === 'breaks') {
+            // BREAK total loss = 노트스코어 손실 + 보너스 손실
+            const noteScoreLoss = (max_t - actual_t) / W * 100;
+            const bonusLoss     = 1.0 - bonusPct;  // 최대 보너스 1% 대비 손실
+            document.getElementById('break_total').innerHTML =
+                \`<span class="loss">-\${(noteScoreLoss + bonusLoss).toFixed(4)}%</span>\`;
         } else {
-            // 50%Great 직접 조정, 나머지는 60%가 흡수
-            const newSixty = sol['60%Great'] - diff;
-            if (newSixty >= 0) {
-                sol['60%Great'] = newSixty;
-            } else {
-                sol['80%Great'] += newSixty;
-                sol['60%Great'] = 0;
-            }
+            const lossContrib = max_t === 0 ? 0 : ((max_t - actual_t) / W * 100);
+            document.getElementById(t + '_total').innerHTML =
+                \`<span class="loss">-\${lossContrib.toFixed(4)}%</span>\`;
         }
-    }
-    updateBreakSub();
-    calcAll();
+    });
+    // grand_total: 노트스코어 손실 + 보너스 손실 (101% 기준)
+    const grandLoss = (100 - notePct) + (1.0 - bonusPct);
+    document.getElementById('grand_total').innerHTML = \`<span class="loss">-\${grandLoss.toFixed(4)}%</span>\`;
+    document.getElementById('total_cp').innerHTML  = \`<span class="count">\${totals.CRITICAL + totals.PERFECT}</span>\`;
+    document.getElementById('total_g').innerHTML   = \`<span class="count">\${totals.GREAT}</span>\`;
+    document.getElementById('total_go').innerHTML  = \`<span class="count">\${totals.GOOD}</span>\`;
+    document.getElementById('total_m').innerHTML   = \`<span class="count">\${totals.MISS}</span>\`;
 }
 
+// ===== 일반 노트 셀 업데이트 =====
 function makeArrow(cell, delta) {
-    const arrow = document.createElement('span');
-    arrow.className = 'arrow';
-    arrow.textContent = delta > 0 ? '↑' : '↓';
-    arrow.onclick = () => adjust(cell, delta);
-    return arrow;
+    const a = document.createElement('span'); a.className = 'arrow';
+    a.textContent = delta > 0 ? '↑' : '↓';
+    a.onclick = () => adjust(cell, delta);
+    return a;
 }
-
 function updateCell(cell) {
-    const type = cell.dataset.type; const jud = cell.dataset.j; if (!type || !jud) return;
+    const type = cell.dataset.type, jud = cell.dataset.j;
+    if (!type || !jud) return;
     const val = d.notes[type][jud];
     cell.innerHTML = '';
-    const countSpan = document.createElement('div'); countSpan.className = 'count'; countSpan.textContent = val; cell.appendChild(countSpan);
-    if (type !== 'breaks' || (jud !== 'PERFECT' && jud !== 'GREAT')) {
-        cell.appendChild(makeArrow(cell, 1)); cell.appendChild(makeArrow(cell, -1));
-    }
+    const cnt = document.createElement('div'); cnt.className = 'count'; cnt.textContent = val; cell.appendChild(cnt);
+    cell.appendChild(makeArrow(cell, 1)); cell.appendChild(makeArrow(cell, -1));
     const loss = getJudgmentLoss(type, jud, val);
     if (loss !== '0.0000') {
-        const lossSpan = document.createElement('div'); lossSpan.className = 'loss'; lossSpan.textContent = '-' + loss + '%'; cell.appendChild(lossSpan);
+        const ls = document.createElement('div'); ls.className = 'loss'; ls.textContent = '-' + loss + '%'; cell.appendChild(ls);
     }
 }
-
 function adjust(cell, delta) {
-    const type = cell.dataset.type; const jud = cell.dataset.j; if (!type || !jud) return;
-    const note = d.notes[type]; let cur = note[jud] || 0; let target = cur + delta;
-    if (target < 0) return; const total = getTotal(note); if (target > total) return;
+    const type = cell.dataset.type, jud = cell.dataset.j;
+    if (!type || !jud) return;
+    const note = d.notes[type]; let cur = note[jud] || 0, target = cur + delta;
+    if (target < 0) return; if (target > getTotal(note)) return;
     if (jud === 'CRITICAL' || jud === 'PERFECT') {
         note[jud] = target;
         const diff = Math.abs(delta);
         if (delta > 0) {
-            let remain = diff;
-            if (note.MISS >= remain) { note.MISS -= remain; remain = 0; }
-            else { remain -= note.MISS; note.MISS = 0; }
-            if (remain > 0 && note.GOOD >= remain) { note.GOOD -= remain; remain = 0; }
-            else if (remain > 0) { remain -= note.GOOD; note.GOOD = 0; }
-            if (remain > 0 && note.GREAT >= remain) { note.GREAT -= remain; }
-            else if (remain > 0) return;
-        } else {
-            note.GREAT += diff;
-        }
+            let r = diff;
+            if (note.MISS >= r) { note.MISS -= r; r = 0; } else { r -= note.MISS; note.MISS = 0; }
+            if (r > 0 && note.GOOD >= r) { note.GOOD -= r; r = 0; } else if (r > 0) { r -= note.GOOD; note.GOOD = 0; }
+            if (r > 0 && note.GREAT >= r) { note.GREAT -= r; } else if (r > 0) return;
+        } else { note.GREAT += diff; }
     } else {
-        const cpTotal = note.CRITICAL + note.PERFECT;
-        if (delta > 0 && cpTotal < delta) return;
+        const cpT = note.CRITICAL + note.PERFECT;
+        if (delta > 0 && cpT < delta) return;
         note[jud] = target;
         if (delta > 0) {
-            let remain = delta;
-            if (note.CRITICAL >= remain) { note.CRITICAL -= remain; }
-            else { remain -= note.CRITICAL; note.CRITICAL = 0; if (note.PERFECT >= remain) { note.PERFECT -= remain; } else return; }
-        } else {
-            note.CRITICAL += Math.abs(delta);
-        }
+            let r = delta;
+            if (note.CRITICAL >= r) { note.CRITICAL -= r; }
+            else { r -= note.CRITICAL; note.CRITICAL = 0; if (note.PERFECT >= r) { note.PERFECT -= r; } else return; }
+        } else { note.CRITICAL += Math.abs(delta); }
     }
     document.querySelectorAll(\`td[data-type="\${type}"]\`).forEach(updateCell);
     calcAll();
-    updateBreakSub();
 }
 
-// 초기화
+// ===== 초기화 =====
 calcAll();
-updateBreakSub();
+updateAllBreakCells();
 
 document.querySelectorAll('td.val').forEach(cell => {
-    const type = cell.dataset.type; const jud = cell.dataset.j;
-    if (!type || !jud) return;
-    if (type === 'breaks' && (jud === 'PERFECT' || jud === 'GREAT')) return;
+    // data-type / data-j 없는 셀은 건너뜀 (브레이크 셀 포함)
+    if (!cell.dataset.type || !cell.dataset.j) return;
     updateCell(cell);
 });
 
 document.getElementById('resetBtn').onclick = () => {
     Object.assign(d.notes, JSON.parse(JSON.stringify(orig)));
+    Object.assign(sol, JSON.parse(JSON.stringify(origSol)));
     document.querySelectorAll('td.val').forEach(cell => {
-        const type = cell.dataset.type; const jud = cell.dataset.j;
-        if (!type || !jud) return;
-        if (type === 'breaks' && (jud === 'PERFECT' || jud === 'GREAT')) return;
+        if (!cell.dataset.type || !cell.dataset.j) return;
         updateCell(cell);
     });
-    updateBreakSub();
+    updateAllBreakCells();
     calcAll();
 };
 </script>
@@ -497,9 +491,6 @@ document.getElementById('resetBtn').onclick = () => {
     };
     document.body.appendChild(btn);
     setTimeout(function() {
-        if (document.body.contains(btn)) {
-            document.body.removeChild(btn);
-            URL.revokeObjectURL(url);
-        }
+        if (document.body.contains(btn)) { document.body.removeChild(btn); URL.revokeObjectURL(url); }
     }, 8000);
 })();
