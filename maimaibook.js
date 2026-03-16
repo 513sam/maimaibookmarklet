@@ -125,7 +125,7 @@ javascript:(function () {
     .total{background:linear-gradient(45deg,#424242,#212121);color:#ffeb3b;font-weight:900;}
     .count{font-size:1.6rem;font-weight:900;line-height:1;display:block;}
     .loss{font-size:0.7rem;display:block;margin-top:2px;font-weight:700;opacity:0.9;}
-    .total .loss{font-size:0.95rem;}
+    .total .loss{font-size:1.75rem;}
     .great .loss,.good .loss,.miss .loss{color:#c2185b;}
     .arrow{cursor:pointer;font-size:0.8rem;margin:0 1px;color:#ff5722;transition:all 0.2s;opacity:0.8;}
     .arrow:hover{color:#ffeb3b;opacity:1;transform:scale(1.3);}
