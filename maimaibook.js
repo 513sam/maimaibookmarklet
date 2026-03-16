@@ -131,15 +131,12 @@ javascript:(function () {
     .resetBtn{display:block;margin:20px auto 0;padding:12px 30px;background:linear-gradient(45deg,#f44336,#d32f2f);color:#fff;border:none;border-radius:25px;cursor:pointer;font-weight:900;font-size:1.2rem;transition:all 0.3s;box-shadow:0 5px 15px rgba(244,67,54,0.4);}
     .resetBtn:hover{background:linear-gradient(45deg,#ff5722,#e64a19);transform:translateY(-2px);}
     /* Score row */
-    .score-row{position:relative;display:flex;align-items:center;justify-content:center;margin:30px 0 0;min-height:70px;}
-    .finalRate{font-size:3.5rem;font-weight:900;background:linear-gradient(45deg,#ffeb3b,#ff9800);background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-align:center;}
-    .dx-box{position:absolute;right:0;background:rgba(255,255,255,0.07);border:2px solid rgba(100,200,255,0.4);border-radius:14px;padding:10px 16px;text-align:center;min-width:200px;}
-    .dx-title{font-size:0.7rem;color:#80cfff;font-weight:700;letter-spacing:1px;margin-bottom:3px;opacity:0.85;}
-    .dx-score-val{font-size:1.35rem;font-weight:900;color:#e0f4ff;line-height:1.1;}
-    .dx-rate-row{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:3px;}
-    .dx-rate{font-size:0.85rem;color:#80cfff;}
-    .dx-next{font-size:0.75rem;color:#ffb347;font-weight:700;}
-    .dx-star{font-size:1.3rem;font-weight:900;margin-top:3px;color:#ffe066;text-shadow:0 0 8px rgba(255,224,102,0.7);}
+    .score-row{display:flex;align-items:center;justify-content:center;gap:30px;margin:30px 0 0;}
+    .finalRate{font-size:3.5rem;font-weight:900;background:linear-gradient(45deg,#ffeb3b,#ff9800);background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent;flex-shrink:0;}
+    .dx-box{background:rgba(255,255,255,0.07);border:2px solid rgba(100,200,255,0.4);border-radius:14px;padding:12px 20px;text-align:center;min-width:220px;}
+    .dx-title{font-size:0.75rem;color:#80cfff;font-weight:700;letter-spacing:1px;margin-bottom:4px;opacity:0.85;}
+    .dx-score-val{font-size:1.5rem;font-weight:900;color:#e0f4ff;line-height:1.1;}
+    .dx-star{font-size:1.2rem;font-weight:900;margin-top:5px;color:#ffe066;text-shadow:0 0 8px rgba(255,224,102,0.7);white-space:nowrap;letter-spacing:2px;}
     /* Break sub-cells */
     .bk-sub{display:block;padding:4px 2px;border-bottom:1px solid rgba(255,235,59,0.25);text-align:center;}
     .bk-sub:last-child{border-bottom:none;}
@@ -213,10 +210,6 @@ javascript:(function () {
         <div class="dx-box">
             <div class="dx-title">DX SCORE</div>
             <div class="dx-score-val" id="dxScoreVal">0 / 0</div>
-            <div class="dx-rate-row">
-                <span class="dx-rate" id="dxRatePct">0.0%</span>
-                <span class="dx-next" id="dxNext"></span>
-            </div>
             <div class="dx-star" id="dxStar">—</div>
         </div>
     </div>
@@ -227,8 +220,16 @@ const raw = localStorage.getItem('maimaiResultData');
 if (!raw) { document.body.innerHTML = '<h1 style="color:#f66;text-align:center;">데이터 없음</h1>'; throw new Error('No data'); }
 const d = JSON.parse(raw);
 const orig = JSON.parse(JSON.stringify(d.notes));
-const origSol = d.solutions ? JSON.parse(JSON.stringify(d.solutions)) : { '75%Perfect':0,'50%Perfect':0,'80%Great':0,'60%Great':0,'50%Great':0 };
-const sol = d.solutions || { '75%Perfect':0,'50%Perfect':0,'80%Great':0,'60%Great':0,'50%Great':0 };
+// solutions가 null이면 (매칭 실패 시) 실제 개수를 최상위 서브판정에 배분
+// — Perfect 전체를 75%P로, Great 전체를 50%G로 넣어 최소한 개수는 보임
+const origSol = d.solutions ? JSON.parse(JSON.stringify(d.solutions)) : {
+    '75%Perfect': d.notes.breaks.PERFECT, '50%Perfect': 0,
+    '80%Great': d.notes.breaks.GREAT, '60%Great': 0, '50%Great': 0
+};
+const sol = d.solutions ? JSON.parse(JSON.stringify(d.solutions)) : {
+    '75%Perfect': d.notes.breaks.PERFECT, '50%Perfect': 0,
+    '80%Great': d.notes.breaks.GREAT, '60%Great': 0, '50%Great': 0
+};
 const noteTypes = ['tap','hold','slide','touch','breaks'];
 const weights = {tap:1, hold:2, slide:3, touch:1, breaks:5};
 let globalW = 0;
@@ -413,50 +414,32 @@ function calcDXScore() {
 }
 
 function getDXRating(pct) {
-    if (pct >= 100)  return '★7';
-    if (pct >= 99.5) return '★6.5';
-    if (pct >= 99)   return '★6';
-    if (pct >= 98)   return '★5.5';
-    if (pct >= 97)   return '★5';
-    if (pct >= 95)   return '★4';
-    if (pct >= 93)   return '★3';
-    if (pct >= 90)   return '★2';
-    if (pct >= 85)   return '★1';
-    return '—';
-}
-
-function getNextRankInfo(score, maxScore) {
-    if (maxScore === 0) return null;
-    // 다음 등급 기준 (threshold %, next label)
-    const thresholds = [
-        [85, '★1'], [90, '★2'], [93, '★3'], [95, '★4'],
-        [97, '★5'], [98, '★5.5'], [99, '★6'], [99.5, '★6.5'], [100, '★7']
-    ];
-    const pct = score / maxScore * 100;
-    for (const [thr, label] of thresholds) {
-        if (pct < thr) {
-            // 이 등급에 도달하려면 필요한 최소 점수
-            const needed = Math.ceil(thr / 100 * maxScore);
-            const diff = needed - score;
-            return { label, diff };
-        }
-    }
-    return null; // 이미 ★7 (100%)
+    if (pct >= 100)  return { star: '★7',   next: null,  nextPct: null  };
+    if (pct >= 99.5) return { star: '★6.5', next: '★7',  nextPct: 100   };
+    if (pct >= 99)   return { star: '★6',   next: '★6.5',nextPct: 99.5  };
+    if (pct >= 98)   return { star: '★5.5', next: '★6',  nextPct: 99    };
+    if (pct >= 97)   return { star: '★5',   next: '★5.5',nextPct: 98    };
+    if (pct >= 95)   return { star: '★4',   next: '★5',  nextPct: 97    };
+    if (pct >= 93)   return { star: '★3',   next: '★4',  nextPct: 95    };
+    if (pct >= 90)   return { star: '★2',   next: '★3',  nextPct: 93    };
+    if (pct >= 85)   return { star: '★1',   next: '★2',  nextPct: 90    };
+    return           { star: '—',     next: '★1',  nextPct: 85    };
 }
 
 function updateDXScore() {
     const { score, maxScore } = calcDXScore();
     const pct = maxScore === 0 ? 0 : (score / maxScore * 100);
+    const { star, next, nextPct } = getDXRating(pct);
+
     document.getElementById('dxScoreVal').textContent = score + ' / ' + maxScore;
-    document.getElementById('dxRatePct').textContent  = pct.toFixed(1) + '%';
-    document.getElementById('dxStar').textContent     = getDXRating(pct);
-    const next = getNextRankInfo(score, maxScore);
-    const nextEl = document.getElementById('dxNext');
-    if (next) {
-        nextEl.textContent = '(-' + next.diff + ' → ' + next.label + ')';
-    } else {
-        nextEl.textContent = '(MAX)';
+
+    let starText = star;
+    if (next !== null && nextPct !== null) {
+        // 다음 등급까지 필요한 점수 = ceil(nextPct/100 * maxScore) - score
+        const needed = Math.ceil(nextPct / 100 * maxScore) - score;
+        starText = star + '  -' + needed;
     }
+    document.getElementById('dxStar').textContent = starText;
 }
 
 function calcAll() {
