@@ -123,7 +123,7 @@ javascript:(function () {
     .good{background:linear-gradient(45deg,#a5d6a7,#81c784);color:#000;}
     .miss{background:linear-gradient(45deg,#757575,#616161);color:#fff;}
     .total{background:linear-gradient(45deg,#424242,#212121);color:#ffeb3b;font-weight:900;}
-    .count{font-size:1.6rem;font-weight:900;line-height:1;display:block;}
+    .count{font-size:1.2rem;font-weight:900;line-height:1;display:block;}
     .loss{font-size:0.7rem;display:block;margin-top:2px;font-weight:700;opacity:0.9;}
     .total .loss{font-size:1.75rem;}
     .great .loss,.good .loss,.miss .loss{color:#c2185b;}
