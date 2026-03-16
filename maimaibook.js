@@ -1,4 +1,5 @@
 javascript:(function () {
+    // === 기존 판정 추출 부분 (그대로 유지) ===
     const tapCrit = parseInt(document.querySelector('body > div.wrapper.main_wrapper.t_c > div.gray_block.m_10.m_t_0.p_b_5.f_0 > div:nth-child(4) > table > tbody > tr:nth-child(2) > td:nth-child(2)')?.textContent.trim(), 10) || 0;
     const tapPerfect = parseInt(document.querySelector('body > div.wrapper.main_wrapper.t_c > div.gray_block.m_10.m_t_0.p_b_5.f_0 > div:nth-child(4) > table > tbody > tr:nth-child(2) > td:nth-child(3)')?.textContent.trim(), 10) || 0;
     const tapGreat = parseInt(document.querySelector('body > div.wrapper.main_wrapper.t_c > div.gray_block.m_10.m_t_0.p_b_5.f_0 > div:nth-child(4) > table > tbody > tr:nth-child(2) > td:nth-child(4)')?.textContent.trim(), 10) || 0;
@@ -207,6 +208,25 @@ if (diffClass) lvl.className = 'diff-box ' + diffClass;
 
 function getTotal(note) { return note.CRITICAL + note.PERFECT + note.GREAT + note.GOOD + note.MISS; }
 function getMaxScore(note, w) { return getTotal(note) * w; }
+
+// === 실제 점수 계산 (BREAK 서브판정 반영) ===
+function getActualScore(type) {
+    const n = d.notes[type];
+    const w = weights[type];
+    if (type === 'breaks') {
+        const g80 = sol['80%Great'], g60 = sol['60%Great'], g50 = sol['50%Great'];
+        const Sg = 0.8 * g80 + 0.6 * g60 + 0.5 * g50;
+        return (n.CRITICAL + n.PERFECT) * w + Sg * w + n.GOOD * w * 0.4;
+    } else {
+        return (n.CRITICAL + n.PERFECT) * w + n.GREAT * w * 0.8 + n.GOOD * w * 0.5;
+    }
+}
+
+function getBreakBonus() {
+    const b = d.notes.breaks; const B = getTotal(b); if (B === 0) return 0;
+    return (b.CRITICAL * 1.0 + sol['75%Perfect'] * 0.75 + sol['50%Perfect'] * 0.5 + (sol['80%Great'] + sol['60%Great'] + sol['50%Great']) * 0.4 + b.GOOD * 0.3) / B;
+}
+
 function getJudgmentLoss(type, jud, count) {
     if (count === 0) return '0.0000';
     const w = weights[type];
@@ -231,62 +251,41 @@ function getJudgmentLoss(type, jud, count) {
     }
     return ((lossRate * w * count / maxScore) * 100).toFixed(4);
 }
-function getTypeTotalLoss(type) {
-    const n = d.notes[type]; const w = weights[type];
-    const totalNotes = getTotal(n);
-    const max = totalNotes * w;
-    let actual;
-    if (type === 'breaks') {
-        const g80 = sol['80%Great'], g60 = sol['60%Great'], g50 = sol['50%Great'];
-        const Sg = 0.8 * g80 + 0.6 * g60 + 0.5 * g50;
-        actual = (n.CRITICAL + n.PERFECT) * w + Sg * w + n.GOOD * w * 0.4;
-    } else {
-        actual = (n.CRITICAL + n.PERFECT) * w + n.GREAT * w * 0.8 + n.GOOD * w * 0.5;
-    }
-    return max === 0 ? '0.0000' : (((max - actual) / max) * 100).toFixed(4);
-}
-function getBreakBonus() {
-    const b = d.notes.breaks; const B = getTotal(b); if (B === 0) return 0;
-    return (b.CRITICAL * 1.0 + sol['75%Perfect'] * 0.75 + sol['50%Perfect'] * 0.5 + (sol['80%Great'] + sol['60%Great'] + sol['50%Great']) * 0.4 + b.GOOD * 0.3) / B;
-}
+
 function calcAll() {
     let W = 0, S = 0;
     noteTypes.forEach(t => {
-        const w = weights[t]; const n = d.notes[t];
+        const w = weights[t];
+        const n = d.notes[t];
         W += getMaxScore(n, w);
-        let actual_t;
-        if (t === 'breaks') {
-            const g80 = sol['80%Great'], g60 = sol['60%Great'], g50 = sol['50%Great'];
-            const Sg = 0.8 * g80 + 0.6 * g60 + 0.5 * g50;
-            actual_t = (n.CRITICAL + n.PERFECT) * w + Sg * w + n.GOOD * w * 0.4;
-        } else {
-            actual_t = (n.CRITICAL + n.PERFECT) * w + n.GREAT * w * 0.8 + n.GOOD * w * 0.5;
-        }
-        S += actual_t;
+        S += getActualScore(t);
     });
-    const notePct = (S / W * 100);
+    const notePct = W === 0 ? 0 : (S / W * 100);
     const bonusPct = getBreakBonus();
     const totalPct = notePct + bonusPct;
+    const noteLossTotal = 100 - notePct;   // ← 전체 노트 손실률
+
     document.getElementById('finalRate').textContent = totalPct.toFixed(4) + '%';
 
     const totals = { CRITICAL:0, PERFECT:0, GREAT:0, GOOD:0, MISS:0 };
-    let grandLoss = 0;
     noteTypes.forEach(t => {
         const n = d.notes[t];
         ['CRITICAL','PERFECT','GREAT','GOOD','MISS'].forEach(j => totals[j] += n[j]);
-        const loss = parseFloat(getTypeTotalLoss(t));
-        // === 여기만 수정됨 (id 불일치 해결) ===
-        const lossId = (t === 'breaks') ? 'break_total' : t + '_total';
-        document.getElementById(lossId).innerHTML = \`<span class="loss">-\${loss}%</span>\`;
-        grandLoss += loss;
+        const max_t = getMaxScore(n, weights[t]);
+        const actual_t = getActualScore(t);
+        const lossContrib = max_t === 0 ? 0 : ((max_t - actual_t) / W * 100);   // ← 핵심 수정: 기여 손실률
+        const lossId = t === 'breaks' ? 'break_total' : t + '_total';
+        document.getElementById(lossId).innerHTML = \`<span class="loss">-\${lossContrib.toFixed(4)}%</span>\`;
     });
-    document.getElementById('grand_total').innerHTML = \`<span class="loss">-\${grandLoss.toFixed(4)}%</span>\`;
+
+    document.getElementById('grand_total').innerHTML = \`<span class="loss">-\${noteLossTotal.toFixed(4)}%</span>\`;
     document.getElementById('total_cp').innerHTML = \`<span class="count">\${totals.CRITICAL + totals.PERFECT}</span>\`;
     document.getElementById('total_g').innerHTML = \`<span class="count">\${totals.GREAT}</span>\`;
     document.getElementById('total_go').innerHTML = \`<span class="count">\${totals.GOOD}</span>\`;
     document.getElementById('total_m').innerHTML = \`<span class="count">\${totals.MISS}</span>\`;
 }
 
+// 나머지 함수들 (updateCell, adjust, updateBreakCells 등)은 그대로
 function updateCell(cell) {
     const type = cell.dataset.type; const jud = cell.dataset.j; if (!type || !jud) return;
     const val = d.notes[type][jud];
