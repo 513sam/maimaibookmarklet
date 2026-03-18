@@ -488,14 +488,28 @@ function adjust(cell, delta) {
     var note = d.notes[type]; var cur = note[jud] || 0, target = cur + delta;
     if (target < 0) return; if (target > getTotal(note)) return;
     if (jud === 'CRITICAL' || jud === 'PERFECT') {
-        note[jud] = target;
         var diff = Math.abs(delta);
         if (delta > 0) {
+            // 차감 가능 여부를 임시 변수로 먼저 확인
             var r = diff;
-            if (note.MISS >= r) { note.MISS -= r; r = 0; } else { r -= note.MISS; note.MISS = 0; }
-            if (r > 0 && note.GOOD >= r) { note.GOOD -= r; r = 0; } else if (r > 0) { r -= note.GOOD; note.GOOD = 0; }
-            if (r > 0 && note.GREAT >= r) { note.GREAT -= r; } else if (r > 0) return;
-        } else { note.GREAT += diff; }
+            var tmpMiss = note.MISS, tmpGood = note.GOOD, tmpGreat = note.GREAT;
+            var tmpCrit = note.CRITICAL, tmpPerf = note.PERFECT;
+            if (tmpMiss >= r) { tmpMiss -= r; r = 0; } else { r -= tmpMiss; tmpMiss = 0; }
+            if (r > 0) { if (tmpGood >= r) { tmpGood -= r; r = 0; } else { r -= tmpGood; tmpGood = 0; } }
+            if (r > 0) { if (tmpGreat >= r) { tmpGreat -= r; r = 0; } else { r -= tmpGreat; tmpGreat = 0; } }
+            // MISS/GOOD/GREAT 모두 소진해도 부족하면 상대 CP 판정에서 차감
+            if (r > 0) {
+                if (jud === 'PERFECT' && tmpCrit >= r) { tmpCrit -= r; r = 0; }
+                else if (jud === 'CRITICAL' && tmpPerf >= r) { tmpPerf -= r; r = 0; }
+            }
+            if (r > 0) return; // 차감 불가
+            note.MISS = tmpMiss; note.GOOD = tmpGood; note.GREAT = tmpGreat;
+            note.CRITICAL = tmpCrit; note.PERFECT = tmpPerf;
+            note[jud] = target;
+        } else {
+            note[jud] = target;
+            note.GREAT += diff;
+        }
     } else {
         var cpT = note.CRITICAL + note.PERFECT;
         if (delta > 0 && cpT < delta) return;
