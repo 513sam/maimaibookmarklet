@@ -296,12 +296,17 @@ function adjustBreakUp(key) {
             }
         }
     } else {
-        // 하위판정 ↑: 바로 위부터 순서대로 올라가며 0이 아닌 첫 번째 상위판정에서 차감
-        for (var j = idx - 1; j >= 0; j--) {
-            if (getBreakVal(BH_ALL[j]) > 0) {
-                setBreakVal(BH_ALL[j], getBreakVal(BH_ALL[j]) - 1);
-                setBreakVal(key, getBreakVal(key) + 1);
-                return;
+        // 하위판정 ↑: 무조건 CRITICAL과 교환 우선, CRITICAL=0이면 바로 위 상위판정부터 순서대로 탐색
+        if (d.notes.breaks.CRITICAL > 0) {
+            setBreakVal('CRITICAL', d.notes.breaks.CRITICAL - 1);
+            setBreakVal(key, getBreakVal(key) + 1);
+        } else {
+            for (var j = idx - 1; j >= 0; j--) {
+                if (getBreakVal(BH_ALL[j]) > 0) {
+                    setBreakVal(BH_ALL[j], getBreakVal(BH_ALL[j]) - 1);
+                    setBreakVal(key, getBreakVal(key) + 1);
+                    return;
+                }
             }
         }
     }
