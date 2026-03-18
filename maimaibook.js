@@ -508,7 +508,7 @@ function adjust(cell, delta) {
             note[jud] = target;
         } else {
             note[jud] = target;
-            note.GREAT += diff;
+            note.CRITICAL += diff;
         }
     } else {
         var cpT = note.CRITICAL + note.PERFECT;
