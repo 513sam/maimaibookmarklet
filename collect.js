@@ -2,7 +2,7 @@
 javascript:(function(){
   'use strict';
 
-  const SERVER   = 'http://www.goodmint1452.kro.kr:3000';
+  const SERVER   = 'http://goodmint1452.kro.kr:3000';
   const BASE_URL = 'https://maimaidx-eng.com/maimai-mobile';
 
   if (location.origin !== 'https://maimaidx-eng.com') {
