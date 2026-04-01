@@ -39,7 +39,7 @@ function extract(){
       var m=decodeURIComponent(jacketImg.src).match(/Music\/([0-9a-fA-F]+)\.png/);
       jacket=m?JACKET_BASE+m[1]+'.png':'';
     }
-    results.push({'Song Name':title,'Artist':artist,'Type':chartType,'Difficulty':difficulty,'Constant':constant,'Jacket':jacket});
+    results.push({'Song Name':title,'Artist':artist,'Type':chartType,'Difficulty':difficulty,'Constant':constant,'Jacket':jacket,'New':'OLD'});
   });
   return results;
 }
@@ -56,8 +56,8 @@ function buildXlsx(records){
            (DIFF_ORDER[a.Difficulty]||9)-(DIFF_ORDER[b.Difficulty]||9)||
            a['Song Name'].localeCompare(b['Song Name']);
   });
-  var ws=XLSX.utils.json_to_sheet(final,{header:['Song Name','Artist','Type','Difficulty','Constant','Jacket']});
-  ws['!cols']=[{wch:42},{wch:24},{wch:6},{wch:12},{wch:10},{wch:65}];
+  var ws=XLSX.utils.json_to_sheet(final,{header:['Song Name','Artist','Type','Difficulty','Constant','Jacket','New']});
+  ws['!cols']=[{wch:42},{wch:24},{wch:6},{wch:12},{wch:10},{wch:65},{wch:6}];
   var wb=XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb,ws,'maimai_data');
   var today=new Date().toISOString().slice(0,10);
@@ -67,30 +67,32 @@ function buildXlsx(records){
 }
 
 function run(){
-  var N=5,same=0,prev=0;
+  // N=15번 연속 변화없음 + 페이지 바닥 도달 둘 다 만족해야 종료
+  var N=15, same=0, prev=0;
   var ov=document.createElement('div');
   ov.id='__bmov';
-  ov.style.cssText='position:fixed;top:12px;right:12px;z-index:99999;background:#111827;color:#60a5fa;border:2px solid #60a5fa;border-radius:8px;padding:12px 18px;font:13px monospace;box-shadow:0 4px 16px #0009;';
+  ov.style.cssText='position:fixed;top:12px;right:12px;z-index:99999;background:#111827;color:#60a5fa;border:2px solid #60a5fa;border-radius:8px;padding:12px 18px;font:13px monospace;box-shadow:0 4px 16px #0009;min-width:200px;';
   ov.innerHTML='<b>기록 추출 중...</b><br><span id="__bmst">스크롤 시작...</span>';
   document.body.appendChild(ov);
   var st=document.getElementById('__bmst');
   var t=setInterval(function(){
-    window.scrollBy(0,1400);
+    window.scrollBy(0,800);
     var cur=document.querySelectorAll('div.css-1px98cv').length;
-    st.textContent='로드: '+cur+'개 | 정지: '+same+'/'+N;
+    var atBottom=(window.innerHeight+window.scrollY)>=document.body.scrollHeight-200;
+    st.textContent='로드: '+cur+'개 | 정지: '+same+'/'+N+(atBottom?' | 바닥':'');
     if(cur===prev)same++;else{same=0;prev=cur;}
-    if(same>=N){
+    if(same>=N && atBottom){
       clearInterval(t);
-      st.textContent='추출 중...';
+      st.textContent='추출 중... ('+cur+'개)';
       setTimeout(function(){
         var recs=extract();
         var el=document.getElementById('__bmov');
         if(el)el.parentNode.removeChild(el);
-        if(!recs||!recs.length)return;
+        if(!recs||!recs.length){alert('기록 없음');return;}
         buildXlsx(recs);
-      },600);
+      },800);
     }
-  },300);
+  },500);
 }
 
 if(typeof XLSX!=='undefined'){run();}
