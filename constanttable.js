@@ -1,1 +1,104 @@
-javascript:(function()%7B%0Avar%20SHEETJS%3D'https%3A%2F%2Fcdnjs.cloudflare.com%2Fajax%2Flibs%2Fxlsx%2F0.18.5%2Fxlsx.full.min.js'%3B%0Avar%20JACKET_BASE%3D'https%3A%2F%2Fmaimaidx-eng.com%2Fmaimai-mobile%2Fimg%2FMusic%2F'%3B%0Avar%20DIFF_COLOR%3D%7B'rgb(166%2C%2092%2C%20223)'%3A'MASTER'%2C'rgb(232%2C%20232%2C%20232)'%3A'Re%3AMASTER'%2C'rgb(250%2C%20108%2C%20117)'%3A'EXPERT'%2C'rgb(76%2C%20201%2C%2039)'%3A'BASIC'%2C'rgb(255%2C%20194%2C%205)'%3A'ADVANCED'%7D%3B%0Avar%20DIFF_ORDER%3D%7B'Re%3AMASTER'%3A0%2C'MASTER'%3A1%2C'EXPERT'%3A2%2C'ADVANCED'%3A3%2C'BASIC'%3A4%7D%3B%0Afunction%20normBg(el)%7B%0A%20%20var%20s%3Del.style.background%7C%7Cel.style.backgroundColor%7C%7C''%3B%0A%20%20return%20s.replace(%2Frgb%5C((%5Cd%2B)%2C%5Cs*(%5Cd%2B)%2C%5Cs*(%5Cd%2B)%5C)%2F%2Cfunction(_%2Ca%2Cb%2Cc)%7Breturn%20'rgb('%2Ba%2B'%2C%20'%2Bb%2B'%2C%20'%2Bc%2B')'%3B%7D).trim()%3B%0A%7D%0Afunction%20extract()%7B%0A%20%20var%20cards%3Ddocument.querySelectorAll('div.css-1px98cv')%3B%0A%20%20if(!cards.length)%7Balert('%EC%B9%B4%EB%93%9C%20%EC%97%86%EC%9D%8C%20(div.css-1px98cv).%20%ED%8E%98%EC%9D%B4%EC%A7%80%20%EB%A1%9C%EB%93%9C%20%ED%99%95%EC%9D%B8')%3Breturn%20%5B%5D%3B%7D%0A%20%20var%20results%3D%5B%5D%3B%0A%20%20cards.forEach(function(card)%7B%0A%20%20%20%20var%20titleEl%3Dcard.querySelector('span.css-19q1gey')%3B%0A%20%20%20%20if(!titleEl)return%3B%0A%20%20%20%20var%20title%3DtitleEl.textContent.trim()%3B%0A%20%20%20%20if(!title)return%3B%0A%20%20%20%20var%20artistEl%3Dcard.querySelector('span.css-1bt7c9a')%3B%0A%20%20%20%20var%20artist%3DartistEl%3FartistEl.textContent.trim()%3A''%3B%0A%20%20%20%20var%20typeImg%3Dcard.querySelector('img%5Bsrc*%3D%22music_dx%22%5D')%3B%0A%20%20%20%20var%20chartType%3DtypeImg%3F'DX'%3A'STD'%3B%0A%20%20%20%20var%20diffEl%3Dcard.querySelector('div.css-ggdfvq')%3B%0A%20%20%20%20var%20difficulty%3DdiffEl%3FDIFF_COLOR%5BnormBg(diffEl)%5D%7C%7C''%3A''%3B%0A%20%20%20%20var%20constSpans%3Dcard.querySelectorAll('span.css-1unogd5')%3B%0A%20%20%20%20var%20constant%3D''%3B%0A%20%20%20%20if(constSpans.length%3E%3D2)%7B%0A%20%20%20%20%20%20var%20intPart%3DconstSpans%5B0%5D.textContent.trim()%3B%0A%20%20%20%20%20%20var%20decPart%3DconstSpans%5B1%5D.textContent.trim()%3B%0A%20%20%20%20%20%20var%20parsed%3DparseFloat(intPart%2BdecPart)%3B%0A%20%20%20%20%20%20constant%3DisNaN(parsed)%3F''%3Aparsed%3B%0A%20%20%20%20%7D%20else%20if(constSpans.length%3D%3D%3D1)%7B%0A%20%20%20%20%20%20var%20parsed%3DparseFloat(constSpans%5B0%5D.textContent.trim()%2B'.0')%3B%0A%20%20%20%20%20%20constant%3DisNaN(parsed)%3F''%3Aparsed%3B%0A%20%20%20%20%7D%0A%20%20%20%20var%20jacketImg%3Dcard.querySelector('img%5Bsrc*%3D%22Music%22%5D')%3B%0A%20%20%20%20var%20jacket%3D''%3B%0A%20%20%20%20if(jacketImg)%7B%0A%20%20%20%20%20%20var%20m%3DdecodeURIComponent(jacketImg.src).match(%2FMusic%5C%2F(%5B0-9a-fA-F%5D%2B)%5C.png%2F)%3B%0A%20%20%20%20%20%20jacket%3Dm%3FJACKET_BASE%2Bm%5B1%5D%2B'.png'%3A''%3B%0A%20%20%20%20%7D%0A%20%20%20%20results.push(%7B'Song%20Name'%3Atitle%2C'Artist'%3Aartist%2C'Type'%3AchartType%2C'Difficulty'%3Adifficulty%2C'Constant'%3Aconstant%2C'Jacket'%3Ajacket%7D)%3B%0A%20%20%7D)%3B%0A%20%20return%20results%3B%0A%7D%0Afunction%20buildXlsx(records)%7B%0A%20%20var%20map%3D%7B%7D%3B%0A%20%20records.forEach(function(r)%7B%0A%20%20%20%20var%20k%3Dr%5B'Song%20Name'%5D%2B'%7C%7C'%2Br.Type%2B'%7C%7C'%2Br.Difficulty%3B%0A%20%20%20%20if(!map%5Bk%5D%7C%7C(r.Constant%3Emap%5Bk%5D.Constant))map%5Bk%5D%3Dr%3B%0A%20%20%7D)%3B%0A%20%20var%20final%3DObject.values(map)%3B%0A%20%20final.sort(function(a%2Cb)%7B%0A%20%20%20%20return%20(b.Constant%7C%7C0)-(a.Constant%7C%7C0)%7C%7C%0A%20%20%20%20%20%20%20%20%20%20%20(DIFF_ORDER%5Ba.Difficulty%5D%7C%7C9)-(DIFF_ORDER%5Bb.Difficulty%5D%7C%7C9)%7C%7C%0A%20%20%20%20%20%20%20%20%20%20%20a%5B'Song%20Name'%5D.localeCompare(b%5B'Song%20Name'%5D)%3B%0A%20%20%7D)%3B%0A%20%20var%20ws%3DXLSX.utils.json_to_sheet(final%2C%7Bheader%3A%5B'Song%20Name'%2C'Artist'%2C'Type'%2C'Difficulty'%2C'Constant'%2C'Jacket'%5D%7D)%3B%0A%20%20ws%5B'!cols'%5D%3D%5B%7Bwch%3A42%7D%2C%7Bwch%3A24%7D%2C%7Bwch%3A6%7D%2C%7Bwch%3A12%7D%2C%7Bwch%3A10%7D%2C%7Bwch%3A65%7D%5D%3B%0A%20%20var%20wb%3DXLSX.utils.book_new()%3B%0A%20%20XLSX.utils.book_append_sheet(wb%2Cws%2C'maimai_data')%3B%0A%20%20var%20today%3Dnew%20Date().toISOString().slice(0%2C10)%3B%0A%20%20XLSX.writeFile(wb%2C'maishift_'%2Btoday%2B'.xlsx')%3B%0A%20%20var%20noDiff%3Dfinal.filter(function(r)%7Breturn%20!r.Difficulty%3B%7D).length%3B%0A%20%20alert('%EC%99%84%EB%A3%8C!%20'%2Bfinal.length%2B'%EA%B0%9C%20%EC%B1%84%EB%B3%B4'%2B(noDiff%3F'%20%7C%20%EB%82%9C%EC%9D%B4%EB%8F%84%EB%AF%B8%ED%99%95%EC%9D%B8%3A'%2BnoDiff%2B'%EA%B0%9C'%3A''))%3B%0A%7D%0Afunction%20run()%7B%0A%20%20var%20N%3D5%2Csame%3D0%2Cprev%3D0%3B%0A%20%20var%20ov%3Ddocument.createElement('div')%3B%0A%20%20ov.id%3D'__bmov'%3B%0A%20%20ov.style.cssText%3D'position%3Afixed%3Btop%3A12px%3Bright%3A12px%3Bz-index%3A99999%3Bbackground%3A%23111827%3Bcolor%3A%2360a5fa%3Bborder%3A2px%20solid%20%2360a5fa%3Bborder-radius%3A8px%3Bpadding%3A12px%2018px%3Bfont%3A13px%20monospace%3Bbox-shadow%3A0%204px%2016px%20%230009%3B'%3B%0A%20%20ov.innerHTML%3D'%3Cb%3E%EA%B8%B0%EB%A1%9D%20%EC%B6%94%EC%B6%9C%20%EC%A4%91...%3C%2Fb%3E%3Cbr%3E%3Cspan%20id%3D%22__bmst%22%3E%EC%8A%A4%ED%81%AC%EB%A1%A4%20%EC%8B%9C%EC%9E%91...%3C%2Fspan%3E'%3B%0A%20%20document.body.appendChild(ov)%3B%0A%20%20var%20st%3Ddocument.getElementById('__bmst')%3B%0A%20%20var%20t%3DsetInterval(function()%7B%0A%20%20%20%20window.scrollBy(0%2C1400)%3B%0A%20%20%20%20var%20cur%3Ddocument.querySelectorAll('div.css-1px98cv').length%3B%0A%20%20%20%20st.textContent%3D'%EB%A1%9C%EB%93%9C%3A%20'%2Bcur%2B'%EA%B0%9C%20%7C%20%EC%A0%95%EC%A7%80%3A%20'%2Bsame%2B'%2F'%2BN%3B%0A%20%20%20%20if(cur%3D%3D%3Dprev)same%2B%2B%3Belse%7Bsame%3D0%3Bprev%3Dcur%3B%7D%0A%20%20%20%20if(same%3E%3DN)%7B%0A%20%20%20%20%20%20clearInterval(t)%3B%0A%20%20%20%20%20%20st.textContent%3D'%EC%B6%94%EC%B6%9C%20%EC%A4%91...'%3B%0A%20%20%20%20%20%20setTimeout(function()%7B%0A%20%20%20%20%20%20%20%20var%20recs%3Dextract()%3B%0A%20%20%20%20%20%20%20%20var%20el%3Ddocument.getElementById('__bmov')%3B%0A%20%20%20%20%20%20%20%20if(el)el.parentNode.removeChild(el)%3B%0A%20%20%20%20%20%20%20%20if(!recs%7C%7C!recs.length)return%3B%0A%20%20%20%20%20%20%20%20buildXlsx(recs)%3B%0A%20%20%20%20%20%20%7D%2C600)%3B%0A%20%20%20%20%7D%0A%20%20%7D%2C300)%3B%0A%7D%0Aif(typeof%20XLSX!%3D%3D'undefined')%7Brun()%3B%7D%0Aelse%7Bvar%20s%3Ddocument.createElement('script')%3Bs.src%3DSHEETJS%3Bs.onload%3Drun%3Bs.onerror%3Dfunction()%7Balert('SheetJS%20%EB%A1%9C%EB%93%9C%20%EC%8B%A4%ED%8C%A8')%3B%7D%3Bdocument.head.appendChild(s)%3B%7D%0A%7D)()%3B
+(function(){
+var SHEETJS='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+var JACKET_BASE='https://maimaidx-eng.com/maimai-mobile/img/Music/';
+var DIFF_COLOR={'rgb(166, 92, 223)':'MASTER','rgb(232, 232, 232)':'Re:MASTER','rgb(250, 108, 117)':'EXPERT','rgb(76, 201, 39)':'BASIC','rgb(255, 194, 5)':'ADVANCED'};
+var DIFF_ORDER={'Re:MASTER':0,'MASTER':1,'EXPERT':2,'ADVANCED':3,'BASIC':4};
+
+function normBg(el){
+  var s=el.style.background||el.style.backgroundColor||'';
+  return s.replace(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/,function(_,a,b,c){return 'rgb('+a+', '+b+', '+c+')';}).trim();
+}
+
+function extract(){
+  var cards=document.querySelectorAll('div.css-1px98cv');
+  if(!cards.length){alert('카드 없음 (div.css-1px98cv). 페이지 로드 확인');return [];}
+  var results=[];
+  cards.forEach(function(card){
+    var titleEl=card.querySelector('span.css-19q1gey');
+    if(!titleEl)return;
+    var title=titleEl.textContent.trim();
+    if(!title)return;
+    var artistEl=card.querySelector('span.css-1bt7c9a');
+    var artist=artistEl?artistEl.textContent.trim():'';
+    var typeImg=card.querySelector('img[src*="music_dx"]');
+    var chartType=typeImg?'DX':'STD';
+    var diffEl=card.querySelector('div.css-ggdfvq');
+    var difficulty=diffEl?DIFF_COLOR[normBg(diffEl)]||'':'';
+    var constSpans=card.querySelectorAll('span.css-1unogd5');
+    var constant='';
+    if(constSpans.length>=2){
+      var parsed=parseFloat(constSpans[0].textContent.trim()+constSpans[1].textContent.trim());
+      constant=isNaN(parsed)?'':parsed;
+    } else if(constSpans.length===1){
+      var parsed=parseFloat(constSpans[0].textContent.trim()+'.0');
+      constant=isNaN(parsed)?'':parsed;
+    }
+    var jacketImg=card.querySelector('img[src*="Music"]');
+    var jacket='';
+    if(jacketImg){
+      var m=decodeURIComponent(jacketImg.src).match(/Music\/([0-9a-fA-F]+)\.png/);
+      jacket=m?JACKET_BASE+m[1]+'.png':'';
+    }
+    results.push({'Song Name':title,'Artist':artist,'Type':chartType,'Difficulty':difficulty,'Constant':constant,'Jacket':jacket});
+  });
+  return results;
+}
+
+function buildXlsx(records){
+  var map={};
+  records.forEach(function(r){
+    var k=r['Song Name']+'||'+r.Type+'||'+r.Difficulty;
+    if(!map[k]||(r.Constant>map[k].Constant))map[k]=r;
+  });
+  var final=Object.values(map);
+  final.sort(function(a,b){
+    return (b.Constant||0)-(a.Constant||0)||
+           (DIFF_ORDER[a.Difficulty]||9)-(DIFF_ORDER[b.Difficulty]||9)||
+           a['Song Name'].localeCompare(b['Song Name']);
+  });
+  var ws=XLSX.utils.json_to_sheet(final,{header:['Song Name','Artist','Type','Difficulty','Constant','Jacket']});
+  ws['!cols']=[{wch:42},{wch:24},{wch:6},{wch:12},{wch:10},{wch:65}];
+  var wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'maimai_data');
+  var today=new Date().toISOString().slice(0,10);
+  XLSX.writeFile(wb,'maishift_'+today+'.xlsx');
+  var noDiff=final.filter(function(r){return !r.Difficulty;}).length;
+  alert('완료! '+final.length+'개 채보'+(noDiff?' | 난이도미확인:'+noDiff+'개':''));
+}
+
+function run(){
+  var N=5,same=0,prev=0;
+  var ov=document.createElement('div');
+  ov.id='__bmov';
+  ov.style.cssText='position:fixed;top:12px;right:12px;z-index:99999;background:#111827;color:#60a5fa;border:2px solid #60a5fa;border-radius:8px;padding:12px 18px;font:13px monospace;box-shadow:0 4px 16px #0009;';
+  ov.innerHTML='<b>기록 추출 중...</b><br><span id="__bmst">스크롤 시작...</span>';
+  document.body.appendChild(ov);
+  var st=document.getElementById('__bmst');
+  var t=setInterval(function(){
+    window.scrollBy(0,1400);
+    var cur=document.querySelectorAll('div.css-1px98cv').length;
+    st.textContent='로드: '+cur+'개 | 정지: '+same+'/'+N;
+    if(cur===prev)same++;else{same=0;prev=cur;}
+    if(same>=N){
+      clearInterval(t);
+      st.textContent='추출 중...';
+      setTimeout(function(){
+        var recs=extract();
+        var el=document.getElementById('__bmov');
+        if(el)el.parentNode.removeChild(el);
+        if(!recs||!recs.length)return;
+        buildXlsx(recs);
+      },600);
+    }
+  },300);
+}
+
+if(typeof XLSX!=='undefined'){run();}
+else{
+  var s=document.createElement('script');
+  s.src=SHEETJS;
+  s.onload=run;
+  s.onerror=function(){alert('SheetJS 로드 실패');};
+  document.head.appendChild(s);
+}
+})();
