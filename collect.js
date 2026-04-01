@@ -93,8 +93,9 @@ javascript:(function(){
 
     const name   = pdDoc.querySelector('.name_block')?.textContent?.trim() || '';
     const rating = parseInt(pdDoc.querySelector('.rating_block')?.textContent?.trim()||'0') || 0;
-    const profileImageSrc = pdDoc.querySelector('.main_wrapper img.w_112')?.src || '';
-
+    const profileImageSrc = pdDoc.querySelector('.basic_block.p_10.f_0 > img')?.src
+                     || pdDoc.querySelector('img.w_112.f_l')?.src
+                     || '';
     const trophyEl    = pdDoc.querySelector('.trophy_block');
     const trophyTitle = pdDoc.querySelector('.trophy_inner_block')?.textContent?.trim() || '';
     let trophyTier = 'NORMAL';
