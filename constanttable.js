@@ -22,7 +22,9 @@ function getConstant(card){
   if(!intVal) return '';
   if(!decVal) decVal='.0';
   var parsed=parseFloat(intVal+decVal);
-  return isNaN(parsed)?'':parsed;
+  if(isNaN(parsed)) return '';
+  // 소수점 1자리 고정 문자열로 반환 (11 → "11.0", 14.9 → "14.9")
+  return parsed.toFixed(1);
 }
 
 function extract(){
