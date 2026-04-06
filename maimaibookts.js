@@ -1,6 +1,8 @@
 javascript:(function () {
-    const SERVER = 'http://www.goodmint1452.kro.kr:3000';
+    const SERVER = 'http://goodmint1452.kro.kr:3000';
 
+    fetch('https://api.counterapi.dev/v1/513sam-maimai/bookmarklet/up').catch(function(){});
+    fetch('https://hits.sh/513sam.github.io/maimaibookmarklet.json').catch(function(){});
     const tapCrit = parseInt(document.querySelector('body > div.wrapper.main_wrapper.t_c > div.gray_block.m_10.m_t_0.p_b_5.f_0 > div:nth-child(4) > table > tbody > tr:nth-child(2) > td:nth-child(2)')?.textContent.trim(), 10) || 0;
     const tapPerfect = parseInt(document.querySelector('body > div.wrapper.main_wrapper.t_c > div.gray_block.m_10.m_t_0.p_b_5.f_0 > div:nth-child(4) > table > tbody > tr:nth-child(2) > td:nth-child(3)')?.textContent.trim(), 10) || 0;
     const tapGreat = parseInt(document.querySelector('body > div.wrapper.main_wrapper.t_c > div.gray_block.m_10.m_t_0.p_b_5.f_0 > div:nth-child(4) > table > tbody > tr:nth-child(2) > td:nth-child(4)')?.textContent.trim(), 10) || 0;
@@ -110,10 +112,6 @@ javascript:(function () {
     .header .title{position:absolute;bottom:15px;left:15px;right:15px;font-size:2.5rem;font-weight:900;color:#fff;-webkit-text-stroke:2px #000;text-shadow:0 0 8px #000;}
     .header .info{position:absolute;top:15px;right:15px;text-align:right;font-size:1.1rem;background:rgba(0,0,0,0.8);padding:12px 15px;border-radius:10px;}
     .header .info div{margin:6px 0;}
-    /* 기록 저장 버튼 */
-    .save-btn{position:absolute;top:15px;left:15px;padding:10px 18px;background:linear-gradient(45deg,#4ade80,#22c55e);color:#000;border:none;border-radius:10px;cursor:pointer;font-weight:900;font-size:1rem;box-shadow:0 4px 15px rgba(74,222,128,0.4);transition:all 0.2s;z-index:10;}
-    .save-btn:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(74,222,128,0.6);}
-    .save-btn:disabled{background:#555;color:#999;cursor:not-allowed;transform:none;}
     .diff-box{padding:8px 16px;border-radius:8px;display:inline-block;font-weight:900;font-size:1.2rem;text-shadow:1px 1px 2px #000;}
     .basic{background:linear-gradient(45deg,#4caf50,#45a049);color:#fff;}
     .advanced{background:linear-gradient(45deg,#ff9800,#f57c00);color:#000;}
@@ -131,16 +129,31 @@ javascript:(function () {
     .total{background:linear-gradient(45deg,#424242,#212121);color:#ffeb3b;font-weight:900;}
     .count{font-size:1.6rem;font-weight:900;line-height:1;display:block;}
     .loss{font-size:0.7rem;display:block;margin-top:2px;font-weight:700;opacity:0.9;}
-    .crit .loss,.perf .loss{color:transparent;}
-    .great .loss{color:#c2185b;}
-    .good .loss{color:#388e3c;}
-    .miss .loss{color:#bbb;}
+    .total .loss{font-size:0.95rem;}
+    .great .loss,.good .loss,.miss .loss{color:#c2185b;}
     .arrow{cursor:pointer;font-size:0.8rem;margin:0 1px;color:#ff5722;transition:all 0.2s;opacity:0.8;}
     .arrow:hover{color:#ffeb3b;opacity:1;transform:scale(1.3);}
-    .finalRate{font-size:3.5rem;font-weight:900;margin:30px 0;text-align:center;background:linear-gradient(45deg,#ffeb3b,#ff9800);background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
     .resetBtn{display:block;margin:20px auto 0;padding:12px 30px;background:linear-gradient(45deg,#f44336,#d32f2f);color:#fff;border:none;border-radius:25px;cursor:pointer;font-weight:900;font-size:1.2rem;transition:all 0.3s;box-shadow:0 5px 15px rgba(244,67,54,0.4);}
     .resetBtn:hover{background:linear-gradient(45deg,#ff5722,#e64a19);transform:translateY(-2px);}
-    .break-sub{font-size:1.1rem;line-height:1.1;padding:2px 0;}
+    .score-row{display:flex;align-items:center;justify-content:center;gap:30px;margin:30px 0 0;}
+    .finalRate{font-size:3.5rem;font-weight:900;background:linear-gradient(45deg,#ffeb3b,#ff9800);background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent;flex-shrink:0;}
+    .dx-box{background:rgba(255,255,255,0.07);border:2px solid rgba(100,200,255,0.4);border-radius:14px;padding:12px 20px;text-align:center;min-width:220px;}
+    .dx-title{font-size:0.75rem;color:#80cfff;font-weight:700;letter-spacing:1px;margin-bottom:4px;opacity:0.85;}
+    .dx-score-val{font-size:1.5rem;font-weight:900;color:#e0f4ff;line-height:1.1;}
+    .dx-star{font-size:2rem;font-weight:900;margin-top:5px;color:#ffe066;text-shadow:0 0 8px rgba(255,224,102,0.7);letter-spacing:2px;}
+    .dx-next{font-size:0.8rem;color:#aaa;margin-top:4px;}
+    .bk-sub{display:block;padding:4px 2px;border-bottom:1px solid rgba(255,235,59,0.25);text-align:center;}
+    .bk-sub:last-child{border-bottom:none;}
+    .bk-lbl{font-size:0.6rem;opacity:0.65;display:block;line-height:1.2;}
+    .bk-count{font-size:1.3rem;font-weight:900;line-height:1;display:block;}
+    .bk-loss{font-size:0.65rem;display:block;margin-top:1px;font-weight:700;color:#c2185b;}
+    .bk-cell{vertical-align:middle;}
+    .footer{margin-top:24px;text-align:center;font-size:0.75rem;color:#555;letter-spacing:0.5px;line-height:1.8;}
+    .footer a{color:#555;text-decoration:underline;}
+    .footer a:hover{color:#888;}
+    .save-btn{position:absolute;top:15px;left:15px;padding:10px 18px;background:linear-gradient(45deg,#4ade80,#22c55e);color:#000;border:none;border-radius:10px;cursor:pointer;font-weight:900;font-size:1rem;box-shadow:0 4px 15px rgba(74,222,128,0.4);transition:all 0.2s;z-index:10;}
+    .save-btn:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(74,222,128,0.6);}
+    .save-btn:disabled{background:#555;color:#999;cursor:not-allowed;transform:none;box-shadow:none;}
 </style>
 </head>
 <body>
@@ -173,19 +186,20 @@ javascript:(function () {
             <tr><td>HOLD</td><td class="val crit" data-type="hold" data-j="CRITICAL"></td><td class="val perf" data-type="hold" data-j="PERFECT"></td><td class="val great" data-type="hold" data-j="GREAT"></td><td class="val good" data-type="hold" data-j="GOOD"></td><td class="val miss" data-type="hold" data-j="MISS"></td><td class="val total" id="hold_total"></td></tr>
             <tr><td>SLIDE</td><td class="val crit" data-type="slide" data-j="CRITICAL"></td><td class="val perf" data-type="slide" data-j="PERFECT"></td><td class="val great" data-type="slide" data-j="GREAT"></td><td class="val good" data-type="slide" data-j="GOOD"></td><td class="val miss" data-type="slide" data-j="MISS"></td><td class="val total" id="slide_total"></td></tr>
             <tr><td>TOUCH</td><td class="val crit" data-type="touch" data-j="CRITICAL"></td><td class="val perf" data-type="touch" data-j="PERFECT"></td><td class="val great" data-type="touch" data-j="GREAT"></td><td class="val good" data-type="touch" data-j="GOOD"></td><td class="val miss" data-type="touch" data-j="MISS"></td><td class="val total" id="touch_total"></td></tr>
-            <tr><td>BREAK</td>
-                <td class="val crit" data-type="breaks" data-j="CRITICAL"></td>
-                <td style="padding:0;">
-                    <div id="break75p" class="val perf break-sub" data-type="breaks" data-sub="75p"></div>
-                    <div id="break50p" class="val perf break-sub" data-type="breaks" data-sub="50p"></div>
+            <tr>
+                <td>BREAK</td>
+                <td class="crit bk-cell" id="break_crit"></td>
+                <td class="perf" style="padding:0;">
+                    <div class="bk-sub" id="break75p"></div>
+                    <div class="bk-sub" id="break50p"></div>
                 </td>
-                <td style="padding:0;">
-                    <div id="break80g" class="val great break-sub" data-type="breaks" data-sub="80g"></div>
-                    <div id="break60g" class="val great break-sub" data-type="breaks" data-sub="60g"></div>
-                    <div id="break50g" class="val great break-sub" data-type="breaks" data-sub="50g"></div>
+                <td class="great" style="padding:0;">
+                    <div class="bk-sub" id="break80g"></div>
+                    <div class="bk-sub" id="break60g"></div>
+                    <div class="bk-sub" id="break50g"></div>
                 </td>
-                <td class="val good" data-type="breaks" data-j="GOOD"></td>
-                <td class="val miss" data-type="breaks" data-j="MISS"></td>
+                <td class="good bk-cell" id="break_good"></td>
+                <td class="miss bk-cell" id="break_miss"></td>
                 <td class="val total" id="break_total"></td>
             </tr>
             <tr><td class="total"><b>TOTAL</b></td>
@@ -198,8 +212,19 @@ javascript:(function () {
             </tr>
         </tbody>
     </table>
-    <div class="finalRate" id="finalRate">101.0000%</div>
+    <div class="score-row">
+        <div class="finalRate" id="finalRate">101.0000%</div>
+        <div class="dx-box">
+            <div class="dx-title">DX SCORE</div>
+            <div class="dx-score-val" id="dxScoreVal">0 / 0</div>
+            <div class="dx-star" id="dxStar">—</div>
+            <div class="dx-next" id="dxNext"></div>
+        </div>
+    </div>
     <button class="resetBtn" id="resetBtn">원래대로 리셋</button>
+    <div class="footer">
+        Made by sheamai &nbsp;&nbsp;&nbsp; X account : <a href="https://x.com/sheamai_" target="_blank">@sheamai_</a>
+    </div>
 </div>
 <script>
 const SERVER = '${SERVER}';
@@ -207,7 +232,14 @@ const raw = localStorage.getItem('maimaiResultData');
 if (!raw) { document.body.innerHTML = '<h1 style="color:#f66;text-align:center;">데이터 없음</h1>'; throw new Error('No data'); }
 const d = JSON.parse(raw);
 const orig = JSON.parse(JSON.stringify(d.notes));
-const sol = d.solutions || { '75%Perfect':0, '50%Perfect':0, '80%Great':0, '60%Great':0, '50%Great':0 };
+const origSol = d.solutions ? JSON.parse(JSON.stringify(d.solutions)) : {
+    '75%Perfect': d.notes.breaks.PERFECT, '50%Perfect': 0,
+    '80%Great': d.notes.breaks.GREAT, '60%Great': 0, '50%Great': 0
+};
+const sol = d.solutions ? JSON.parse(JSON.stringify(d.solutions)) : {
+    '75%Perfect': d.notes.breaks.PERFECT, '50%Perfect': 0,
+    '80%Great': d.notes.breaks.GREAT, '60%Great': 0, '50%Great': 0
+};
 const noteTypes = ['tap','hold','slide','touch','breaks'];
 const weights = {tap:1, hold:2, slide:3, touch:1, breaks:5};
 let globalW = 0;
@@ -219,19 +251,15 @@ document.getElementById('time').textContent = d.realTime || '??:??';
 document.getElementById('kind').textContent = d.musicKind === 'standard' ? 'Standard' : d.musicKind === 'dx' ? 'DX' : '?';
 const lvl = document.getElementById('level');
 lvl.textContent = 'Lv.' + (d.level || '??');
-const diffMap = {basic:'basic', advanced:'advanced', expert:'expert', master:'master', reMaster:'reMaster', remaster:'reMaster'};
+const diffMap = {basic:'basic',advanced:'advanced',expert:'expert',master:'master',reMaster:'reMaster',remaster:'reMaster'};
 const diffClass = diffMap[d.difficulty] || '';
 if (diffClass) lvl.className = 'diff-box ' + diffClass;
 
-// ── 기록 저장 버튼 ──
+// ── 기록 저장 버튼 (추가된 부분) ──
 const saveBtn = document.getElementById('saveBtn');
-let saveWin = null;
-
 saveBtn.addEventListener('click', function() {
     saveBtn.disabled = true;
     saveBtn.textContent = '⏳ 저장 중...';
-
-    // 현재 데이터 수집 (조정된 sol 포함)
     const payload = {
         songName:   d.songName,
         songType:   d.musicKind,
@@ -241,15 +269,11 @@ saveBtn.addEventListener('click', function() {
         notes:      d.notes,
         solutions:  sol
     };
-
-    // 서버의 save-note 페이지 열기
-    saveWin = window.open(SERVER + '/save-note', 'maimai-save-note', 'width=460,height=500');
-
-    // save-note 페이지가 ready 신호 보내면 데이터 전송
+    const saveWin = window.open(SERVER + '/save-note', 'maimai-save-note', 'width=460,height=500');
     window.addEventListener('message', function onReady(e) {
         if (e.data && e.data.topic === 'saveNoteReady') {
             window.removeEventListener('message', onReady);
-            saveWin.postMessage({ topic: 'saveNoteData', payload }, '*');
+            saveWin.postMessage({ topic: 'saveNoteData', payload: payload }, '*');
             saveBtn.textContent = '✅ 저장 완료!';
             setTimeout(function() {
                 saveBtn.disabled = false;
@@ -257,161 +281,289 @@ saveBtn.addEventListener('click', function() {
             }, 3000);
         }
     });
-
-    // 타임아웃 (30초)
     setTimeout(function() {
         saveBtn.disabled = false;
         saveBtn.textContent = '💾 기록 저장하기';
     }, 30000);
 });
 
+// ===== BREAK 서브판정 헬퍼 =====
+const BH_IDS = {
+    'CRITICAL':'break_crit', '75%Perfect':'break75p', '50%Perfect':'break50p',
+    '80%Great':'break80g', '60%Great':'break60g', '50%Great':'break50g',
+    'GOOD':'break_good', 'MISS':'break_miss'
+};
+const BH_LABELS = {
+    'CRITICAL':'CP', '75%Perfect':'75%P', '50%Perfect':'50%P',
+    '80%Great':'80%G', '60%Great':'60%G', '50%Great':'50%G',
+    'GOOD':'GOOD', 'MISS':'MISS'
+};
+const BH_ALL = ['CRITICAL','75%Perfect','50%Perfect','80%Great','60%Great','50%Great','GOOD','MISS'];
+
+function getBreakVal(key) {
+    if (key === 'CRITICAL') return d.notes.breaks.CRITICAL;
+    if (key === 'GOOD')     return d.notes.breaks.GOOD;
+    if (key === 'MISS')     return d.notes.breaks.MISS;
+    return sol[key] || 0;
+}
+function setBreakVal(key, val) {
+    if (key === 'CRITICAL') { d.notes.breaks.CRITICAL = val; return; }
+    if (key === 'GOOD')     { d.notes.breaks.GOOD = val; return; }
+    if (key === 'MISS')     { d.notes.breaks.MISS = val; return; }
+    sol[key] = val;
+    d.notes.breaks.PERFECT = sol['75%Perfect'] + sol['50%Perfect'];
+    d.notes.breaks.GREAT   = sol['80%Great']   + sol['60%Great']  + sol['50%Great'];
+}
+
+function adjustBreakUp(key) {
+    var idx = BH_ALL.indexOf(key);
+    if (key === 'CRITICAL') {
+        var order = ['MISS','GOOD','50%Great','60%Great','80%Great','50%Perfect','75%Perfect'];
+        for (var i = 0; i < order.length; i++) {
+            if (getBreakVal(order[i]) > 0) {
+                setBreakVal(order[i], getBreakVal(order[i]) - 1);
+                setBreakVal('CRITICAL', getBreakVal('CRITICAL') + 1);
+                return;
+            }
+        }
+    } else {
+        if (d.notes.breaks.CRITICAL > 0) {
+            setBreakVal('CRITICAL', d.notes.breaks.CRITICAL - 1);
+            setBreakVal(key, getBreakVal(key) + 1);
+        } else {
+            for (var j = idx - 1; j >= 0; j--) {
+                if (getBreakVal(BH_ALL[j]) > 0) {
+                    setBreakVal(BH_ALL[j], getBreakVal(BH_ALL[j]) - 1);
+                    setBreakVal(key, getBreakVal(key) + 1);
+                    return;
+                }
+            }
+        }
+    }
+}
+
+function adjustBreakDown(key) {
+    if (getBreakVal(key) === 0) return;
+    if (key === 'CRITICAL') {
+        setBreakVal('CRITICAL', d.notes.breaks.CRITICAL - 1);
+        setBreakVal('80%Great', getBreakVal('80%Great') + 1);
+    } else {
+        setBreakVal(key, getBreakVal(key) - 1);
+        setBreakVal('CRITICAL', d.notes.breaks.CRITICAL + 1);
+    }
+}
+
+function getBreakSubLoss(key, count) {
+    if (count === 0 || globalW <= 0) return null;
+    const B = getTotal(d.notes.breaks);
+    if (B === 0) return null;
+    if (key === '75%Perfect') return (0.25 * count / B).toFixed(4);
+    if (key === '50%Perfect') return (0.50 * count / B).toFixed(4);
+    if (key === '80%Great')   return (1.0  * count / globalW * 100).toFixed(4);
+    if (key === '60%Great')   return (2.0  * count / globalW * 100).toFixed(4);
+    if (key === '50%Great')   return (2.5  * count / globalW * 100).toFixed(4);
+    if (key === 'GOOD')       return (3.0  * count / globalW * 100).toFixed(4);
+    if (key === 'MISS')       return (5.0  * count / globalW * 100).toFixed(4);
+    return null;
+}
+
+function renderBreakCell(key) {
+    var el = document.getElementById(BH_IDS[key]);
+    if (!el) return;
+    var count = getBreakVal(key);
+    var loss  = getBreakSubLoss(key, count);
+    el.innerHTML = '';
+    var lbl = document.createElement('span'); lbl.className = 'bk-lbl'; lbl.textContent = BH_LABELS[key]; el.appendChild(lbl);
+    var cnt = document.createElement('span'); cnt.className = 'bk-count'; cnt.textContent = count; el.appendChild(cnt);
+    if (loss && loss !== '0.0000') {
+        var ls = document.createElement('span'); ls.className = 'bk-loss'; ls.textContent = '-' + loss + '%'; el.appendChild(ls);
+    }
+    var up = document.createElement('span'); up.className = 'arrow'; up.textContent = '↑';
+    up.onclick = (function(k){ return function(){ adjustBreakUp(k); updateAllBreakCells(); calcAll(); }; })(key);
+    var dn = document.createElement('span'); dn.className = 'arrow'; dn.textContent = '↓';
+    dn.onclick = (function(k){ return function(){ adjustBreakDown(k); updateAllBreakCells(); calcAll(); }; })(key);
+    el.appendChild(up); el.appendChild(dn);
+}
+
+function updateAllBreakCells() {
+    BH_ALL.forEach(function(k){ renderBreakCell(k); });
+}
+
 function getTotal(note) { return note.CRITICAL + note.PERFECT + note.GREAT + note.GOOD + note.MISS; }
 function getMaxScore(note, w) { return getTotal(note) * w; }
 function getActualScore(type) {
-    const n = d.notes[type];
-    const w = weights[type];
+    var n = d.notes[type], w = weights[type];
     if (type === 'breaks') {
-        const g80 = sol['80%Great'], g60 = sol['60%Great'], g50 = sol['50%Great'];
-        const Sg = 0.8 * g80 + 0.6 * g60 + 0.5 * g50;
+        var Sg = 0.8*sol['80%Great'] + 0.6*sol['60%Great'] + 0.5*sol['50%Great'];
         return (n.CRITICAL + n.PERFECT) * w + Sg * w + n.GOOD * w * 0.4;
-    } else {
-        return (n.CRITICAL + n.PERFECT) * w + n.GREAT * w * 0.8 + n.GOOD * w * 0.5;
     }
+    return (n.CRITICAL + n.PERFECT) * w + n.GREAT * w * 0.8 + n.GOOD * w * 0.5;
 }
 function getBreakBonus() {
-    const b = d.notes.breaks; const B = getTotal(b); if (B === 0) return 0;
-    return (b.CRITICAL * 1.0 + sol['75%Perfect'] * 0.75 + sol['50%Perfect'] * 0.5 + (sol['80%Great'] + sol['60%Great'] + sol['50%Great']) * 0.4 + b.GOOD * 0.3) / B;
+    var b = d.notes.breaks, B = getTotal(b);
+    if (B === 0) return 0;
+    return (b.CRITICAL + sol['75%Perfect']*0.75 + sol['50%Perfect']*0.5 +
+            (sol['80%Great']+sol['60%Great']+sol['50%Great'])*0.4 + b.GOOD*0.3) / B;
 }
 function getJudgmentLoss(type, jud, count) {
-    if (count === 0 || jud === 'CRITICAL' || jud === 'PERFECT') return '0.0000';
-    if (globalW <= 0) return '0.0000';
-    const w = weights[type];
-    let lossRate = 0;
-    if (jud === 'GREAT') {
-        if (type === 'breaks') {
-            const g80 = sol['80%Great'], g60 = sol['60%Great'], g50 = sol['50%Great'];
-            const G = g80 + g60 + g50;
-            if (G === 0) return '0.0000';
-            const Sg = 0.8 * g80 + 0.6 * g60 + 0.5 * g50;
-            lossRate = 1 - (Sg / G);
-        } else { lossRate = 0.2; }
-    } else if (jud === 'GOOD') {
-        lossRate = (type === 'breaks') ? 0.6 : 0.5;
-    } else if (jud === 'MISS') {
-        lossRate = 1.0;
-    }
-    const lossAmount = lossRate * w * count;
-    return ((lossAmount / globalW) * 100).toFixed(4);
+    if (count === 0 || jud === 'CRITICAL' || jud === 'PERFECT' || globalW <= 0) return '0.0000';
+    var w = weights[type];
+    var lossRate = jud === 'GREAT' ? 0.2 : jud === 'GOOD' ? (type==='breaks'?0.6:0.5) : 1.0;
+    return ((lossRate * w * count / globalW) * 100).toFixed(4);
 }
+
+function calcDXScore() {
+    var score = 0, maxScore = 0;
+    noteTypes.forEach(function(t) {
+        var n = d.notes[t];
+        maxScore += getTotal(n) * 3;
+        if (t === 'breaks') {
+            score += n.CRITICAL * 3;
+            score += (sol['75%Perfect'] + sol['50%Perfect']) * 2;
+            score += (sol['80%Great'] + sol['60%Great'] + sol['50%Great']) * 1;
+        } else {
+            score += n.CRITICAL * 3 + n.PERFECT * 2 + n.GREAT * 1;
+        }
+    });
+    return { score: score, maxScore: maxScore };
+}
+
+function getDXRating(pct) {
+    if (pct >= 100)  return { star: '★7',   next: null,  nextPct: null  };
+    if (pct >= 99.5) return { star: '★6.5', next: '★7',  nextPct: 100   };
+    if (pct >= 99)   return { star: '★6',   next: '★6.5',nextPct: 99.5  };
+    if (pct >= 98)   return { star: '★5.5', next: '★6',  nextPct: 99    };
+    if (pct >= 97)   return { star: '★5',   next: '★5.5',nextPct: 98    };
+    if (pct >= 95)   return { star: '★4',   next: '★5',  nextPct: 97    };
+    if (pct >= 93)   return { star: '★3',   next: '★4',  nextPct: 95    };
+    if (pct >= 90)   return { star: '★2',   next: '★3',  nextPct: 93    };
+    if (pct >= 85)   return { star: '★1',   next: '★2',  nextPct: 90    };
+    return           { star: '—',    next: '★1',  nextPct: 85    };
+}
+
+function updateDXScore() {
+    var res = calcDXScore();
+    var pct = res.maxScore === 0 ? 0 : (res.score / res.maxScore * 100);
+    var r = getDXRating(pct);
+    document.getElementById('dxScoreVal').textContent = res.score + ' / ' + res.maxScore;
+    document.getElementById('dxStar').textContent = r.star;
+    if (r.next !== null && r.nextPct !== null) {
+        var needed = Math.ceil(r.nextPct / 100 * res.maxScore) - res.score;
+        document.getElementById('dxNext').textContent = pct.toFixed(2) + '%  (' + r.next + '  -' + needed + ')';
+    } else {
+        document.getElementById('dxNext').textContent = pct.toFixed(2) + '%';
+    }
+}
+
 function calcAll() {
-    let W = 0, S = 0;
-    noteTypes.forEach(t => {
-        const w = weights[t]; const n = d.notes[t];
-        W += getMaxScore(n, w); S += getActualScore(t);
-    });
+    var W = 0, S = 0;
+    noteTypes.forEach(function(t){ W += getMaxScore(d.notes[t], weights[t]); S += getActualScore(t); });
     globalW = W;
-    const notePct = W === 0 ? 0 : (S / W * 100);
-    const bonusPct = getBreakBonus();
-    const totalPct = notePct + bonusPct;
-    const noteLossTotal = 100 - notePct;
+    var notePct  = W === 0 ? 0 : (S / W * 100);
+    var bonusPct = getBreakBonus();
+    var totalPct = notePct + bonusPct;
     document.getElementById('finalRate').textContent = totalPct.toFixed(4) + '%';
-    const totals = { CRITICAL:0, PERFECT:0, GREAT:0, GOOD:0, MISS:0 };
-    noteTypes.forEach(t => {
-        const n = d.notes[t];
-        ['CRITICAL','PERFECT','GREAT','GOOD','MISS'].forEach(j => totals[j] += n[j]);
-        const max_t = getMaxScore(n, weights[t]);
-        const actual_t = getActualScore(t);
-        const lossContrib = max_t === 0 ? 0 : ((max_t - actual_t) / W * 100);
-        const lossId = t === 'breaks' ? 'break_total' : t + '_total';
-        document.getElementById(lossId).innerHTML = '<span class="loss">-'+lossContrib.toFixed(4)+'%</span>';
+
+    var totals = {CRITICAL:0, PERFECT:0, GREAT:0, GOOD:0, MISS:0};
+    noteTypes.forEach(function(t) {
+        var n = d.notes[t];
+        ['CRITICAL','PERFECT','GREAT','GOOD','MISS'].forEach(function(j){ totals[j] += n[j]; });
+        var max_t    = getMaxScore(n, weights[t]);
+        var actual_t = getActualScore(t);
+        if (t === 'breaks') {
+            var noteScoreLoss = (max_t - actual_t) / W * 100;
+            var bonusLoss     = 1.0 - bonusPct;
+            document.getElementById('break_total').innerHTML = '<span class="loss">-' + (noteScoreLoss + bonusLoss).toFixed(4) + '%</span>';
+        } else {
+            var lossContrib = max_t === 0 ? 0 : ((max_t - actual_t) / W * 100);
+            document.getElementById(t + '_total').innerHTML = '<span class="loss">-' + lossContrib.toFixed(4) + '%</span>';
+        }
     });
-    document.getElementById('grand_total').innerHTML = '<span class="loss">-'+noteLossTotal.toFixed(4)+'%</span>';
-    document.getElementById('total_cp').innerHTML = '<span class="count">'+(totals.CRITICAL + totals.PERFECT)+'</span>';
-    document.getElementById('total_g').innerHTML = '<span class="count">'+totals.GREAT+'</span>';
-    document.getElementById('total_go').innerHTML = '<span class="count">'+totals.GOOD+'</span>';
-    document.getElementById('total_m').innerHTML = '<span class="count">'+totals.MISS+'</span>';
+    var grandLoss = (100 - notePct) + (1.0 - bonusPct);
+    document.getElementById('grand_total').innerHTML = '<span class="loss">-' + grandLoss.toFixed(4) + '%</span>';
+    document.getElementById('total_cp').innerHTML  = '<span class="count">' + (totals.CRITICAL + totals.PERFECT) + '</span>';
+    document.getElementById('total_p').innerHTML   = '<span class="count">' + totals.PERFECT + '</span>';
+    document.getElementById('total_g').innerHTML   = '<span class="count">' + totals.GREAT + '</span>';
+    document.getElementById('total_go').innerHTML  = '<span class="count">' + totals.GOOD + '</span>';
+    document.getElementById('total_m').innerHTML   = '<span class="count">' + totals.MISS + '</span>';
+    updateDXScore();
 }
-function updateBreakSub() {
-    const p75 = document.getElementById('break75p');
-    const p50 = document.getElementById('break50p');
-    const g80 = document.getElementById('break80g');
-    const g60 = document.getElementById('break60g');
-    const g50 = document.getElementById('break50g');
-    p75.innerHTML = '<span class="count">'+sol['75%Perfect']+'</span><span class="loss">-'+getJudgmentLoss('breaks','PERFECT',sol['75%Perfect'])+'%</span>';
-    p50.innerHTML = '<span class="count">'+sol['50%Perfect']+'</span><span class="loss">-'+getJudgmentLoss('breaks','PERFECT',sol['50%Perfect'])+'%</span>';
-    g80.innerHTML = '<span class="count">'+sol['80%Great']+'</span><span class="loss">-'+getJudgmentLoss('breaks','GREAT',sol['80%Great'])+'%</span>';
-    g60.innerHTML = '<span class="count">'+sol['60%Great']+'</span><span class="loss">-'+getJudgmentLoss('breaks','GREAT',sol['60%Great'])+'%</span>';
-    g50.innerHTML = '<span class="count">'+sol['50%Great']+'</span><span class="loss">-'+getJudgmentLoss('breaks','GREAT',sol['50%Great'])+'%</span>';
-    [p75, p50, g80, g60, g50].forEach(function(cell) {
-        var up = document.createElement('span'); up.className = 'arrow'; up.textContent = '↑';
-        up.onclick = function(){ adjustBreakSub(cell, 1); };
-        var down = document.createElement('span'); down.className = 'arrow'; down.textContent = '↓';
-        down.onclick = function(){ adjustBreakSub(cell, -1); };
-        cell.appendChild(up); cell.appendChild(down);
-    });
-}
-function adjustBreakSub(cell, delta) {
-    const sub = cell.dataset.sub;
-    let key = '';
-    if (sub === '75p') key = '75%Perfect';
-    else if (sub === '50p') key = '50%Perfect';
-    else if (sub === '80g') key = '80%Great';
-    else if (sub === '60g') key = '60%Great';
-    else if (sub === '50g') key = '50%Great';
-    let cur = sol[key] || 0;
-    let target = cur + delta;
-    if (target < 0) return;
-    if (key.indexOf('Perfect') !== -1) {
-        const totalP = sol['75%Perfect'] + sol['50%Perfect'];
-        if (target > totalP) return;
-        const other = (key === '75%Perfect' ? '50%Perfect' : '75%Perfect');
-        sol[other] = totalP - target;
-    }
-    sol[key] = target;
-    updateBreakSub(); calcAll();
-}
+
 function makeArrow(cell, delta) {
-    const arrow = document.createElement('span');
-    arrow.className = 'arrow';
-    arrow.textContent = delta > 0 ? '↑' : '↓';
-    arrow.onclick = function() {
-        if (cell.dataset.sub) adjustBreakSub(cell, delta);
-        else adjust(cell, delta);
-    };
-    return arrow;
+    var a = document.createElement('span'); a.className = 'arrow';
+    a.textContent = delta > 0 ? '↑' : '↓';
+    a.onclick = function(){ adjust(cell, delta); };
+    return a;
 }
 function updateCell(cell) {
-    const type = cell.dataset.type; const jud = cell.dataset.j;
+    var type = cell.dataset.type, jud = cell.dataset.j;
     if (!type || !jud) return;
-    const val = d.notes[type][jud];
+    var val = d.notes[type][jud];
     cell.innerHTML = '';
-    const countSpan = document.createElement('div'); countSpan.className = 'count'; countSpan.textContent = val; cell.appendChild(countSpan);
-    if (!(type === 'breaks' && (jud === 'PERFECT' || jud === 'GREAT'))) {
-        cell.appendChild(makeArrow(cell, 1));
-        cell.appendChild(makeArrow(cell, -1));
-    }
-    const loss = getJudgmentLoss(type, jud, val);
+    var cnt = document.createElement('div'); cnt.className = 'count'; cnt.textContent = val; cell.appendChild(cnt);
+    cell.appendChild(makeArrow(cell, 1)); cell.appendChild(makeArrow(cell, -1));
+    var loss = getJudgmentLoss(type, jud, val);
     if (loss !== '0.0000') {
-        const lossSpan = document.createElement('div'); lossSpan.className = 'loss'; lossSpan.textContent = '-' + loss + '%'; cell.appendChild(lossSpan);
+        var ls = document.createElement('div'); ls.className = 'loss'; ls.textContent = '-' + loss + '%'; cell.appendChild(ls);
     }
 }
-calcAll();
-updateBreakSub();
-document.querySelectorAll('td.val').forEach(function(cell) {
-    const type = cell.dataset.type; const jud = cell.dataset.j;
+function adjust(cell, delta) {
+    var type = cell.dataset.type, jud = cell.dataset.j;
     if (!type || !jud) return;
-    if (type === 'breaks' && (jud === 'PERFECT' || jud === 'GREAT')) return;
+    var note = d.notes[type]; var cur = note[jud] || 0, target = cur + delta;
+    if (target < 0) return; if (target > getTotal(note)) return;
+    if (jud === 'CRITICAL' || jud === 'PERFECT') {
+        var diff = Math.abs(delta);
+        if (delta > 0) {
+            var r = diff;
+            var tmpMiss = note.MISS, tmpGood = note.GOOD, tmpGreat = note.GREAT;
+            var tmpCrit = note.CRITICAL, tmpPerf = note.PERFECT;
+            if (tmpMiss >= r) { tmpMiss -= r; r = 0; } else { r -= tmpMiss; tmpMiss = 0; }
+            if (r > 0) { if (tmpGood >= r) { tmpGood -= r; r = 0; } else { r -= tmpGood; tmpGood = 0; } }
+            if (r > 0) { if (tmpGreat >= r) { tmpGreat -= r; r = 0; } else { r -= tmpGreat; tmpGreat = 0; } }
+            if (r > 0) {
+                if (jud === 'PERFECT' && tmpCrit >= r) { tmpCrit -= r; r = 0; }
+                else if (jud === 'CRITICAL' && tmpPerf >= r) { tmpPerf -= r; r = 0; }
+            }
+            if (r > 0) return;
+            note.MISS = tmpMiss; note.GOOD = tmpGood; note.GREAT = tmpGreat;
+            note.CRITICAL = tmpCrit; note.PERFECT = tmpPerf;
+            note[jud] = target;
+        } else {
+            note[jud] = target;
+            note.CRITICAL += diff;
+        }
+    } else {
+        var cpT = note.CRITICAL + note.PERFECT;
+        if (delta > 0 && cpT < delta) return;
+        note[jud] = target;
+        if (delta > 0) {
+            var r2 = delta;
+            if (note.CRITICAL >= r2) { note.CRITICAL -= r2; }
+            else { r2 -= note.CRITICAL; note.CRITICAL = 0; if (note.PERFECT >= r2) { note.PERFECT -= r2; } else return; }
+        } else { note.CRITICAL += Math.abs(delta); }
+    }
+    document.querySelectorAll('td[data-type="' + type + '"]').forEach(function(c){ updateCell(c); });
+    calcAll();
+}
+
+calcAll();
+updateAllBreakCells();
+
+document.querySelectorAll('td.val').forEach(function(cell) {
+    if (!cell.dataset.type || !cell.dataset.j) return;
     updateCell(cell);
 });
+
 document.getElementById('resetBtn').onclick = function() {
     Object.assign(d.notes, JSON.parse(JSON.stringify(orig)));
+    Object.assign(sol, JSON.parse(JSON.stringify(origSol)));
     document.querySelectorAll('td.val').forEach(function(cell) {
-        const type = cell.dataset.type; const jud = cell.dataset.j;
-        if (!type || !jud) return;
-        if (type === 'breaks' && (jud === 'PERFECT' || jud === 'GREAT')) return;
+        if (!cell.dataset.type || !cell.dataset.j) return;
         updateCell(cell);
     });
-    updateBreakSub(); calcAll();
+    updateAllBreakCells();
+    calcAll();
 };
 </script>
 </body>
@@ -421,7 +573,7 @@ document.getElementById('resetBtn').onclick = function() {
     const url = URL.createObjectURL(blob);
     const btn = document.createElement('button');
     btn.textContent = '마이마이 분석기 열기';
-    btn.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:99999;padding:18px 36px;font-size:20px;font-weight:bold;background:#ffeb3b;color:#000;border:none;border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,0.6);cursor:pointer;';
+    btn.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:99999;padding:18px 36px;font-size:20px;font-weight:bold;background:#ffeb3b;color:#000;border:none;border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,0.6);cursor:pointer;transition:all 0.3s;outline:none;';
     btn.onclick = function() {
         window.open(url, '_blank', 'noopener,noreferrer');
         document.body.removeChild(btn);
@@ -429,9 +581,6 @@ document.getElementById('resetBtn').onclick = function() {
     };
     document.body.appendChild(btn);
     setTimeout(function() {
-        if (document.body.contains(btn)) {
-            document.body.removeChild(btn);
-            URL.revokeObjectURL(url);
-        }
+        if (document.body.contains(btn)) { document.body.removeChild(btn); URL.revokeObjectURL(url); }
     }, 8000);
 })();
