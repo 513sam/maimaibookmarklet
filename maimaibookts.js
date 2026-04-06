@@ -266,6 +266,7 @@ saveBtn.addEventListener('click', function() {
         difficulty: d.difficulty,
         finalRate:  d.finalRate,
         jacket:     d.jacketImg,
+        realTime:   d.realTime,
         notes:      d.notes,
         solutions:  sol
     };
