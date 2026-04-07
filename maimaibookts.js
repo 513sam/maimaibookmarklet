@@ -260,6 +260,7 @@ const saveBtn = document.getElementById('saveBtn');
 saveBtn.addEventListener('click', function() {
     saveBtn.disabled = true;
     saveBtn.textContent = '⏳ 저장 중...';
+    // 저장 시 항상 원본(수정 전) 데이터 사용
     const payload = {
         songName:   d.songName,
         songType:   d.musicKind,
@@ -267,8 +268,8 @@ saveBtn.addEventListener('click', function() {
         finalRate:  d.finalRate,
         jacket:     d.jacketImg,
         realTime:   d.realTime,
-        notes:      d.notes,
-        solutions:  sol
+        notes:      orig,
+        solutions:  origSol
     };
     const saveWin = window.open(SERVER + '/save-note', 'maimai-save-note', 'width=460,height=500');
     window.addEventListener('message', function onReady(e) {
