@@ -1,62 +1,62 @@
 (function(){
 var SHEETJS='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
-var JACKET_BASE='https://maimaidx-eng.com/maimai-mobile/img/Music/';
-var DIFF_COLOR={'rgb(166, 92, 223)':'MASTER','rgb(232, 232, 232)':'Re:MASTER','rgb(250, 108, 117)':'EXPERT','rgb(76, 201, 39)':'BASIC','rgb(255, 194, 5)':'ADVANCED'};
+// 난이도 색상(hex) -> 이름 매핑. rr-level 요소의 --rr-level-bg 커스텀 프로퍼티 값 사용.
+var DIFF_COLOR={
+  '#4cc927':'BASIC',
+  '#ffc205':'ADVANCED',
+  '#fa6c75':'EXPERT',
+  '#a65cdf':'MASTER',
+  '#e8e8e8':'Re:MASTER' // Re:MASTER 실제 색상 다르면 콘솔에서 확인 후 수정 필요
+};
 
-function normBg(el){
-  var s=el.style.background||el.style.backgroundColor||'';
-  return s.replace(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/,function(_,a,b,c){return 'rgb('+a+', '+b+', '+c+')';}).trim();
+function getDifficulty(card){
+  var levelDiv=card.querySelector('div.rr-level');
+  if(!levelDiv) return '';
+  var bg=levelDiv.style.getPropertyValue('--rr-level-bg').trim().toLowerCase();
+  return DIFF_COLOR[bg]||'';
 }
 
 function getConstant(card){
-  // 난이도 div 안의 span들에서 정수부/소수부 패턴으로 찾기
-  var diffEl=card.querySelector('div.css-ggdfvq');
-  if(!diffEl) return '';
-  var intVal='', decVal='';
-  var spans=diffEl.querySelectorAll('span');
-  spans.forEach(function(sp){
-    var t=sp.textContent.trim();
-    if(/^\d+$/.test(t) && !intVal) intVal=t;
-    if(/^\.\d+\+?$/.test(t) && !decVal) decVal=t.replace('+','');
+  var lgtAlign=card.querySelector('div.rr-level .lgt-align');
+  if(!lgtAlign) return '';
+  // 정수부: lgt-align의 직계 자식 span.gt (lgt-frac 안에 있지 않은 것)
+  var intSpan=null, fracSpan=null;
+  lgtAlign.childNodes.forEach(function(n){
+    if(n.nodeType===1 && n.tagName==='SPAN' && n.classList.contains('gt')) intSpan=n;
   });
-  if(!intVal) return '';
-  if(!decVal) decVal='.0';
+  var fracWrap=lgtAlign.querySelector('.lgt-frac');
+  if(fracWrap) fracSpan=fracWrap.querySelector('span.gt');
+  if(!intSpan||!fracSpan) return '';
+  var intVal=intSpan.textContent.trim();
+  var decVal=fracSpan.textContent.trim(); // 예: ".8"
   var parsed=parseFloat(intVal+decVal);
   if(isNaN(parsed)) return '';
-  // 소수점 1자리 고정 문자열로 반환 (11 → "11.0", 14.9 → "14.9")
   return parsed.toFixed(1);
 }
 
 function extract(){
-  var cards=document.querySelectorAll('div.css-1px98cv');
+  var cards=document.querySelectorAll('div.rr');
   if(!cards.length){alert('카드 없음. 페이지 로드 확인');return [];}
   var results=[];
   cards.forEach(function(card){
-    var titleEl=card.querySelector('span.css-19q1gey');
+    var titleEl=card.querySelector('span.rr-title .st-wrap');
     if(!titleEl)return;
     var title=titleEl.textContent.trim();
     if(!title)return;
-    var artistEl=card.querySelector('span.css-1bt7c9a');
+    var artistEl=card.querySelector('span.rr-artist');
     var artist=artistEl?artistEl.textContent.trim():'';
-    var typeImg=card.querySelector('img[src*="music_dx"]');
-    var chartType=typeImg?'DX':'STD';
-    var diffEl=card.querySelector('div.css-ggdfvq');
-    var difficulty=diffEl?DIFF_COLOR[normBg(diffEl)]||'':'';
+    var typeImg=card.querySelector('img.rr-type');
+    var chartType=typeImg?(typeImg.alt==='DX'?'DX':'STD'):'';
+    var difficulty=getDifficulty(card);
     var constant=getConstant(card);
-    var jacketImg=card.querySelector('img[src*="Music"]');
-    var jacket='';
-    if(jacketImg){
-      var m=decodeURIComponent(jacketImg.src).match(/Music\/([0-9a-fA-F]+)\.png/);
-      jacket=m?JACKET_BASE+m[1]+'.png':'';
-    }
-    // DOM 순서 그대로 저장 (정렬 없음)
+    var jacketImg=card.querySelector('img.rr-jacket');
+    var jacket=jacketImg?jacketImg.src:'';
     results.push({'Song Name':title,'Artist':artist,'Type':chartType,'Difficulty':difficulty,'Constant':constant,'Jacket':jacket,'New':'OLD'});
   });
   return results;
 }
 
 function buildXlsx(records){
-  // 중복 제거만 (순서 유지)
   var seen={};
   var final=[];
   records.forEach(function(r){
@@ -84,7 +84,7 @@ function run(){
   var st=document.getElementById('__bmst');
   var t=setInterval(function(){
     window.scrollBy(0,800);
-    var cur=document.querySelectorAll('div.css-1px98cv').length;
+    var cur=document.querySelectorAll('div.rr').length;
     var atBottom=(window.innerHeight+window.scrollY)>=document.body.scrollHeight-200;
     st.textContent='로드: '+cur+'개 | 정지: '+same+'/'+N+(atBottom?' | 바닥':'');
     if(cur===prev)same++;else{same=0;prev=cur;}
