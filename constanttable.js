@@ -75,31 +75,47 @@ function buildXlsx(records){
 }
 
 function run(){
+  // 가상 스크롤(virtualization) 대응: 화면 밖으로 나간 카드는 DOM에서 사라지므로,
+  // 끝까지 스크롤한 뒤 한 번에 뽑지 않고 스크롤하는 매 틱마다 현재 보이는 카드를 누적 수집한다.
+  var collected={}; // key -> record
   var N=15,same=0,prev=0;
   var ov=document.createElement('div');
   ov.id='__bmov';
-  ov.style.cssText='position:fixed;top:12px;right:12px;z-index:99999;background:#111827;color:#60a5fa;border:2px solid #60a5fa;border-radius:8px;padding:12px 18px;font:13px monospace;box-shadow:0 4px 16px #0009;min-width:200px;';
+  ov.style.cssText='position:fixed;top:12px;right:12px;z-index:99999;background:#111827;color:#60a5fa;border:2px solid #60a5fa;border-radius:8px;padding:12px 18px;font:13px monospace;box-shadow:0 4px 16px #0009;min-width:220px;';
   ov.innerHTML='<b>기록 추출 중...</b><br><span id="__bmst">스크롤 시작...</span>';
   document.body.appendChild(ov);
   var st=document.getElementById('__bmst');
+
+  function collectVisible(){
+    var recs=extract(); // 현재 DOM에 있는 카드만 뽑음 (가상 스크롤로 일부만 존재)
+    recs.forEach(function(r){
+      var k=r['Song Name']+'||'+r.Type+'||'+r.Difficulty;
+      collected[k]=r; // 같은 카드가 다시 보여도 덮어쓰기만 되고 누락은 없음
+    });
+  }
+
   var t=setInterval(function(){
-    window.scrollBy(0,800);
-    var cur=document.querySelectorAll('div.rr').length;
+    collectVisible(); // 스크롤 전에 먼저 현재 화면 것 수집
+    window.scrollBy(0,600);
+    var curDom=document.querySelectorAll('div.rr').length;
+    var curTotal=Object.keys(collected).length;
     var atBottom=(window.innerHeight+window.scrollY)>=document.body.scrollHeight-200;
-    st.textContent='로드: '+cur+'개 | 정지: '+same+'/'+N+(atBottom?' | 바닥':'');
-    if(cur===prev)same++;else{same=0;prev=cur;}
+    st.textContent='누적: '+curTotal+'개 (화면:'+curDom+') | 정지: '+same+'/'+N+(atBottom?' | 바닥':'');
+    if(curTotal===prev)same++;else{same=0;prev=curTotal;}
     if(same>=N && atBottom){
       clearInterval(t);
-      st.textContent='추출 중... ('+cur+'개)';
+      // 바닥 도달 후 마지막으로 한 번 더 수집 (마지막 화면분 확실히 포함)
+      collectVisible();
+      st.textContent='정리 중... ('+Object.keys(collected).length+'개)';
       setTimeout(function(){
-        var recs=extract();
         var el=document.getElementById('__bmov');
         if(el)el.parentNode.removeChild(el);
+        var recs=Object.values(collected);
         if(!recs||!recs.length){alert('기록 없음');return;}
         buildXlsx(recs);
-      },800);
+      },500);
     }
-  },500);
+  },400);
 }
 
 if(typeof XLSX!=='undefined'){run();}
