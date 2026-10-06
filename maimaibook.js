@@ -1,4 +1,5 @@
 javascript:(function () {
+    const SERVER = 'https://maivoltex.kro.kr';
     fetch('https://abacus.jasoncameron.dev/hit/513sam-maimai/bookmarklet').catch(function(){});
     const tapCrit = parseInt(document.querySelector('body > div.wrapper.main_wrapper.t_c > div.gray_block.m_10.m_t_0.p_b_5.f_0 > div:nth-child(4) > table > tbody > tr:nth-child(2) > td:nth-child(2)')?.textContent.trim(), 10) || 0;
     const tapPerfect = parseInt(document.querySelector('body > div.wrapper.main_wrapper.t_c > div.gray_block.m_10.m_t_0.p_b_5.f_0 > div:nth-child(4) > table > tbody > tr:nth-child(2) > td:nth-child(3)')?.textContent.trim(), 10) || 0;
@@ -148,12 +149,16 @@ javascript:(function () {
     .footer{margin-top:24px;text-align:center;font-size:0.75rem;color:#555;letter-spacing:0.5px;line-height:1.8;}
     .footer a{color:#555;text-decoration:underline;}
     .footer a:hover{color:#888;}
+    .save-btn{position:absolute;top:15px;left:15px;padding:10px 18px;background:linear-gradient(45deg,#4ade80,#22c55e);color:#000;border:none;border-radius:10px;cursor:pointer;font-weight:900;font-size:1rem;box-shadow:0 4px 15px rgba(74,222,128,0.4);transition:all 0.2s;z-index:10;}
+    .save-btn:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(74,222,128,0.6);}
+    .save-btn:disabled{background:#555;color:#999;cursor:not-allowed;transform:none;box-shadow:none;}
 </style>
 </head>
 <body>
 <div class="container">
     <div class="header">
         <img id="jacket" src="" alt="Jacket">
+        <button class="save-btn" id="saveBtn">💾 기록 저장하기</button>
         <div class="title" id="songName"></div>
         <div class="info">
             <div id="track"></div>
@@ -220,6 +225,7 @@ javascript:(function () {
     </div>
 </div>
 <script>
+const SERVER = '${SERVER}';
 const raw = localStorage.getItem('maimaiResultData');
 if (!raw) { document.body.innerHTML = '<h1 style="color:#f66;text-align:center;">데이터 없음</h1>'; throw new Error('No data'); }
 const d = JSON.parse(raw);
@@ -246,6 +252,48 @@ lvl.textContent = 'Lv.' + (d.level || '??');
 const diffMap = {basic:'basic',advanced:'advanced',expert:'expert',master:'master',reMaster:'reMaster',remaster:'reMaster'};
 const diffClass = diffMap[d.difficulty] || '';
 if (diffClass) lvl.className = 'diff-box ' + diffClass;
+
+// ── 기록 저장 버튼 (추가된 부분) ──
+const saveBtn = document.getElementById('saveBtn');
+saveBtn.addEventListener('click', function() {
+    saveBtn.disabled = true;
+    saveBtn.textContent = '⏳ 저장 중...';
+    // 저장 시 항상 원본(수정 전) 데이터 사용
+    const payload = {
+        songName:   d.songName,
+        songType:   d.musicKind,
+        difficulty: d.difficulty,
+        finalRate:  d.finalRate,
+        jacket:     d.jacketImg,
+        realTime:   d.realTime,
+        notes:      orig,
+        solutions:  origSol
+    };
+    const saveWin = window.open(SERVER + '/save-note', 'maimai-save-note', 'width=460,height=500');
+    if (!saveWin) {
+        alert('팝업이 차단되어 저장 창을 열 수 없어요. 브라우저 주소창의 팝업 차단을 해제하고 다시 눌러주세요.');
+        saveBtn.disabled = false;
+        saveBtn.textContent = '💾 기록 저장하기';
+        return;
+    }
+    window.addEventListener('message', function onReady(e) {
+        // 우리 사이트(save-note 창)에서 온 신호만 받고, 데이터도 그 사이트로만 보냄
+        if (e.origin !== SERVER) return;
+        if (e.data && e.data.topic === 'saveNoteReady') {
+            window.removeEventListener('message', onReady);
+            saveWin.postMessage({ topic: 'saveNoteData', payload: payload }, SERVER);
+            saveBtn.textContent = '✅ 저장 완료!';
+            setTimeout(function() {
+                saveBtn.disabled = false;
+                saveBtn.textContent = '💾 기록 저장하기';
+            }, 3000);
+        }
+    });
+    setTimeout(function() {
+        saveBtn.disabled = false;
+        saveBtn.textContent = '💾 기록 저장하기';
+    }, 30000);
+});
 
 // ===== BREAK 서브판정 헬퍼 =====
 const BH_IDS = {
@@ -275,17 +323,9 @@ function setBreakVal(key, val) {
     d.notes.breaks.GREAT   = sol['80%Great']   + sol['60%Great']  + sol['50%Great'];
 }
 
-// ===== BREAK 판정 조정 =====
-// 모든 노트와 동일한 규칙:
-//   ↑ (개수 증가): CRITICAL에서 1개 가져옴
-//   ↓ (개수 감소): CRITICAL에 1개 돌려줌
-//   CRITICAL ↑: MISS → GOOD → 50%Great → 60%Great → 80%Great → 50%Perfect → 75%Perfect 순으로 차감
-//   CRITICAL ↓: 80%Great에 1개 줌 (일반 노트의 GREAT 해당)
-
 function adjustBreakUp(key) {
     var idx = BH_ALL.indexOf(key);
     if (key === 'CRITICAL') {
-        // CRITICAL ↑: 최하위부터 순차 차감 (MISS → GOOD → 50%G → 60%G → 80%G → 50%P → 75%P)
         var order = ['MISS','GOOD','50%Great','60%Great','80%Great','50%Perfect','75%Perfect'];
         for (var i = 0; i < order.length; i++) {
             if (getBreakVal(order[i]) > 0) {
@@ -295,7 +335,6 @@ function adjustBreakUp(key) {
             }
         }
     } else {
-        // 하위판정 ↑: 무조건 CRITICAL과 교환 우선, CRITICAL=0이면 바로 위 상위판정부터 순서대로 탐색
         if (d.notes.breaks.CRITICAL > 0) {
             setBreakVal('CRITICAL', d.notes.breaks.CRITICAL - 1);
             setBreakVal(key, getBreakVal(key) + 1);
@@ -314,17 +353,14 @@ function adjustBreakUp(key) {
 function adjustBreakDown(key) {
     if (getBreakVal(key) === 0) return;
     if (key === 'CRITICAL') {
-        // CRITICAL 감소 → 80%Great(GREAT 최상위)에 돌려줌
         setBreakVal('CRITICAL', d.notes.breaks.CRITICAL - 1);
         setBreakVal('80%Great', getBreakVal('80%Great') + 1);
     } else {
-        // 하위판정 감소 → CRITICAL에 돌려줌
         setBreakVal(key, getBreakVal(key) - 1);
         setBreakVal('CRITICAL', d.notes.breaks.CRITICAL + 1);
     }
 }
 
-// ===== BREAK 손실 계산 =====
 function getBreakSubLoss(key, count) {
     if (count === 0 || globalW <= 0) return null;
     const B = getTotal(d.notes.breaks);
@@ -361,7 +397,6 @@ function updateAllBreakCells() {
     BH_ALL.forEach(function(k){ renderBreakCell(k); });
 }
 
-// ===== 일반 계산 =====
 function getTotal(note) { return note.CRITICAL + note.PERFECT + note.GREAT + note.GOOD + note.MISS; }
 function getMaxScore(note, w) { return getTotal(note) * w; }
 function getActualScore(type) {
@@ -462,7 +497,6 @@ function calcAll() {
     updateDXScore();
 }
 
-// ===== 일반 노트 셀 =====
 function makeArrow(cell, delta) {
     var a = document.createElement('span'); a.className = 'arrow';
     a.textContent = delta > 0 ? '↑' : '↓';
@@ -489,19 +523,17 @@ function adjust(cell, delta) {
     if (jud === 'CRITICAL' || jud === 'PERFECT') {
         var diff = Math.abs(delta);
         if (delta > 0) {
-            // 차감 가능 여부를 임시 변수로 먼저 확인
             var r = diff;
             var tmpMiss = note.MISS, tmpGood = note.GOOD, tmpGreat = note.GREAT;
             var tmpCrit = note.CRITICAL, tmpPerf = note.PERFECT;
             if (tmpMiss >= r) { tmpMiss -= r; r = 0; } else { r -= tmpMiss; tmpMiss = 0; }
             if (r > 0) { if (tmpGood >= r) { tmpGood -= r; r = 0; } else { r -= tmpGood; tmpGood = 0; } }
             if (r > 0) { if (tmpGreat >= r) { tmpGreat -= r; r = 0; } else { r -= tmpGreat; tmpGreat = 0; } }
-            // MISS/GOOD/GREAT 모두 소진해도 부족하면 상대 CP 판정에서 차감
             if (r > 0) {
                 if (jud === 'PERFECT' && tmpCrit >= r) { tmpCrit -= r; r = 0; }
                 else if (jud === 'CRITICAL' && tmpPerf >= r) { tmpPerf -= r; r = 0; }
             }
-            if (r > 0) return; // 차감 불가
+            if (r > 0) return;
             note.MISS = tmpMiss; note.GOOD = tmpGood; note.GREAT = tmpGreat;
             note.CRITICAL = tmpCrit; note.PERFECT = tmpPerf;
             note[jud] = target;
@@ -523,7 +555,6 @@ function adjust(cell, delta) {
     calcAll();
 }
 
-// ===== 초기화 =====
 calcAll();
 updateAllBreakCells();
 
